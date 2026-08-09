@@ -1,0 +1,33 @@
+function CornerMark({ className = "" }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" className={className} width="14" height="14">
+      <path d="M1 8V1H8" stroke="#2563EB" strokeWidth="1.5" fill="none" opacity="0.6" />
+    </svg>
+  );
+}
+
+export default function Panel({
+  children,
+  className = "",
+}: {
+  children: React.ReactNode;
+  className?: string;
+}) {
+  return (
+    <div className={`relative border border-line bg-white shadow-[0_8px_30px_rgba(15,23,42,0.06)] ${className}`}>
+      <div className="absolute -top-px -left-px">
+        <CornerMark />
+      </div>
+      <div className="absolute -top-px -right-px rotate-90">
+        <CornerMark />
+      </div>
+      <div className="absolute -bottom-px -left-px -rotate-90">
+        <CornerMark />
+      </div>
+      <div className="absolute -bottom-px -right-px rotate-180">
+        <CornerMark />
+      </div>
+      {children}
+    </div>
+  );
+}
