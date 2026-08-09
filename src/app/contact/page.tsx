@@ -25,7 +25,7 @@ export default function Contact() {
               <input
                 type="text"
                 className="w-full bg-navy border border-line px-4 py-2.5 text-sm focus:outline-none focus:border-cyan"
-                placeholder="Your name"
+                placeholder="Enter your name"
               />
             </div>
             <div>
@@ -35,7 +35,7 @@ export default function Contact() {
               <input
                 type="email"
                 className="w-full bg-navy border border-line px-4 py-2.5 text-sm focus:outline-none focus:border-cyan"
-                placeholder="you@college.edu"
+                placeholder="you@example.com"
               />
             </div>
             <div>
@@ -45,7 +45,7 @@ export default function Contact() {
               <textarea
                 rows={5}
                 className="w-full bg-navy border border-line px-4 py-2.5 text-sm focus:outline-none focus:border-cyan resize-none"
-                placeholder="How can we help?"
+                placeholder="Write your message"
               />
             </div>
             <Button type="submit" className="w-full justify-center">

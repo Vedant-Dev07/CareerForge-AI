@@ -8,21 +8,23 @@ import ScoreBar from "@/components/ui/score-bar";
 import { getSession } from "@/lib/auth";
 import ProfileCard from "@/components/dashboard/widgets/profile-card";
 import ReadinessPanel from "@/components/dashboard/widgets/readiness-panel";
+import JourneyMap from "@/components/dashboard/journey-map";
 
 const actions = [
-  "Improve SQL joins and advanced queries",
-  "Complete an aptitude test on probability",
-  "Update resume keywords for Data Analyst roles",
+  "Review your current progress",
+  "Complete an aptitude module",
+  "Update your resume keywords for your target role",
 ];
 
 export default function Dashboard() {
   const [userName, setUserName] = useState("Student");
 
   useEffect(() => {
-    const session = getSession();
-    if (session) {
-      setUserName(session.name);
-    }
+    getSession().then((session) => {
+      if (session) {
+        setUserName(session.name);
+      }
+    });
   }, []);
 
   return (
@@ -39,12 +41,12 @@ export default function Dashboard() {
           COMPONENT SCORES
         </div>
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
-          <ScoreBar label="Career match" value={92} accent="#4FD1C5" />
-          <ScoreBar label="Resume score" value={84} />
-          <ScoreBar label="Skills" value={76} accent="#4FD1C5" />
-          <ScoreBar label="Interview" value={71} />
-          <ScoreBar label="Aptitude" value={72} accent="#4FD1C5" />
-          <ScoreBar label="Learning progress" value={64} />
+          <ScoreBar label="Career match" value={0} accent="#4FD1C5" />
+          <ScoreBar label="Resume score" value={0} />
+          <ScoreBar label="Skills" value={0} accent="#4FD1C5" />
+          <ScoreBar label="Interview" value={0} />
+          <ScoreBar label="Aptitude" value={0} accent="#4FD1C5" />
+          <ScoreBar label="Learning progress" value={0} />
         </div>
       </Panel>
 
@@ -62,26 +64,31 @@ export default function Dashboard() {
         </ul>
       </Panel>
 
-      <div className="grid sm:grid-cols-3 gap-5">
+      <div className="grid sm:grid-cols-3 gap-5 mb-8">
         <Link href="/dashboard/career">
           <Panel className="p-5 hover:border-cyan/60 transition-colors rounded-2xl">
             <div className="text-xs text-muted font-mono mb-1">CAREER MATCH</div>
-            <div className="font-bold">Data Analyst — 92%</div>
+            <div className="font-bold">Strong fit detected</div>
           </Panel>
         </Link>
         <Link href="/dashboard/skills">
           <Panel className="p-5 hover:border-cyan/60 transition-colors rounded-2xl">
             <div className="text-xs text-muted font-mono mb-1">TOP GAP</div>
-            <div className="font-bold">SQL — High priority</div>
+            <div className="font-bold">System design and SQL</div>
           </Panel>
         </Link>
         <Link href="/dashboard/interview">
           <Panel className="p-5 hover:border-cyan/60 transition-colors rounded-2xl">
-            <div className="text-xs text-muted font-mono mb-1">LAST INTERVIEW</div>
-            <div className="font-bold">80% overall score</div>
+            <div className="text-xs text-muted font-mono mb-1">INTERVIEW PREP</div>
+            <div className="font-bold">Start your first mock round</div>
           </Panel>
         </Link>
       </div>
+
+      <Panel className="p-6 rounded-2xl">
+        <div className="text-xs tracking-widest text-muted font-mono mb-4">PRODUCT JOURNEY</div>
+        <JourneyMap />
+      </Panel>
     </>
   );
 }

@@ -7,27 +7,16 @@ import { Send } from "lucide-react";
 
 const suggested = [
   "What should I learn next?",
-  "Which career suits me?",
-  "Why is my readiness score low?",
-  "Which project should I build?",
   "How can I improve my resume?",
-];
-
-const seedMessages = [
-  { from: "mentor", text: "How can I help with your career?" },
-  { from: "student", text: "What should I learn next?" },
-  {
-    from: "mentor",
-    text: "Based on your current skill assessment, SQL should be your next priority — it's your highest-impact gap for Data Analyst roles.",
-  },
+  "Which skills should I focus on?",
 ];
 
 export default function Mentor() {
-  const [messages] = useState(seedMessages);
+  const [messages] = useState([{ from: "mentor", text: "Complete onboarding so your mentor receives your profile and progress details." }]);
 
   return (
     <>
-      <DashboardHeader title="AI career mentor" subtitle="Guidance grounded in your own profile and progress." />
+      <DashboardHeader title="AI career mentor" subtitle="Your guidance assistant is ready when your profile is complete." />
 
       <Panel className="p-0 flex flex-col h-[500px]">
         <div className="flex-1 overflow-y-auto p-6 space-y-4">
@@ -59,7 +48,7 @@ export default function Mentor() {
             <input
               type="text"
               className="flex-1 bg-navy border border-line px-4 py-2.5 text-sm focus:outline-none focus:border-cyan"
-              placeholder="Ask your career question..."
+              placeholder="Enter your question"
             />
             <button className="p-2.5 bg-forge text-[#1A0A00]">
               <Send size={16} />
