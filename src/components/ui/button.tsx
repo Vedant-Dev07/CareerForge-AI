@@ -8,6 +8,7 @@ type Props = {
   className?: string;
   icon?: boolean;
   type?: "button" | "submit";
+  disabled?: boolean;
 };
 
 export default function Button({
@@ -17,6 +18,7 @@ export default function Button({
   className = "",
   icon = true,
   type = "button",
+  disabled = false,
 }: Props) {
   const base =
     "text-sm font-semibold px-6 py-3 inline-flex items-center gap-2 transition-all duration-200 rounded-xl";
@@ -35,7 +37,7 @@ export default function Button({
     );
   }
   return (
-    <button type={type} className={cls}>
+    <button type={type} className={cls} disabled={disabled}>
       {children}
       {icon && <ArrowRight size={15} />}
     </button>

@@ -6,29 +6,34 @@ export type UserSession = {
   onboardingComplete: boolean;
 };
 
-const SESSION_KEY = "careerforge-session";
-
-export function saveSession(user: UserSession) {
-  if (typeof window === "undefined") return;
-  window.localStorage.setItem(SESSION_KEY, JSON.stringify(user));
-}
-
-export function getSession(): UserSession | null {
-  if (typeof window === "undefined") return null;
-  const raw = window.localStorage.getItem(SESSION_KEY);
-  if (!raw) return null;
+export async function getSession(): Promise<UserSession | null> {
   try {
-    return JSON.parse(raw) as UserSession;
+    const response = await fetch("/api/auth/me", {
+      method: "GET",
+      credentials: "include",
+      cache: "no-store",
+    });
+
+    if (!response.ok) return null;
+
+    const data = (await response.json()) as { user?: UserSession };
+    return data.user ?? null;
   } catch {
     return null;
   }
 }
 
-export function clearSession() {
-  if (typeof window === "undefined") return;
-  window.localStorage.removeItem(SESSION_KEY);
+export async function clearSession() {
+  try {
+    await fetch("/api/auth/logout", {
+      method: "POST",
+      credentials: "include",
+    });
+  } catch {
+    // Keep logout navigation responsive even if the cleanup request fails.
+  }
 }
 
-export function isAuthenticated() {
-  return Boolean(getSession());
+export async function isAuthenticated() {
+  return Boolean(await getSession());
 }

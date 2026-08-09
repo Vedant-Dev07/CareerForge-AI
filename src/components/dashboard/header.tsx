@@ -16,22 +16,32 @@ export default function DashboardHeader({
   const [userName, setUserName] = useState("ST");
 
   useEffect(() => {
-    const session = getSession();
-    if (!session) {
-      router.replace("/login");
-      return;
-    }
-    const initials = session.name
-      .split(" ")
-      .map((part) => part[0])
-      .join("")
-      .slice(0, 2)
-      .toUpperCase();
-    setUserName(initials || "ST");
+    let active = true;
+
+    getSession().then((session) => {
+      if (!active) return;
+
+      if (!session) {
+        router.replace("/login");
+        return;
+      }
+
+      const initials = session.name
+        .split(" ")
+        .map((part) => part[0])
+        .join("")
+        .slice(0, 2)
+        .toUpperCase();
+      setUserName(initials || "ST");
+    });
+
+    return () => {
+      active = false;
+    };
   }, [router]);
 
-  const handleLogout = () => {
-    clearSession();
+  const handleLogout = async () => {
+    await clearSession();
     router.push("/");
   };
 

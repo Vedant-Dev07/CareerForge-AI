@@ -8,7 +8,7 @@ export default function ProfileCard() {
   const [session, setSession] = useState<{ name: string; email: string; onboardingComplete: boolean } | null>(null);
 
   useEffect(() => {
-    setSession(getSession());
+    getSession().then(setSession);
   }, []);
 
   if (!session) return null;

@@ -7,22 +7,24 @@ import SiteNav from "@/components/site-nav";
 import Panel from "@/components/ui/panel";
 import SectionLabel from "@/components/ui/section-label";
 import Button from "@/components/ui/button";
-import { getSession, saveSession } from "@/lib/auth";
+import { getSession } from "@/lib/auth";
 
 export default function Login() {
   const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    const session = getSession();
-    if (session) {
-      router.replace(session.onboardingComplete ? "/dashboard" : "/onboarding");
-    }
+    getSession().then((session) => {
+      if (session) {
+        router.replace(session.onboardingComplete ? "/dashboard" : "/onboarding");
+      }
+    });
   }, [router]);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
 
@@ -31,13 +33,28 @@ export default function Login() {
       return;
     }
 
-    saveSession({
-      name: email.split("@")[0] || "Student",
-      email,
-      onboardingComplete: false,
-    });
+    setLoading(true);
+    try {
+      const response = await fetch("/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ email, password }),
+      });
 
-    router.push("/onboarding");
+      const data = (await response.json()) as { error?: string };
+
+      if (!response.ok) {
+        setError(data.error ?? "Unable to log in.");
+        return;
+      }
+
+      router.push("/dashboard");
+    } catch {
+      setError("Unable to log in.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -53,14 +70,14 @@ export default function Login() {
             {error ? <p className="text-sm text-rose-600">{error}</p> : null}
             <div>
               <label className="text-xs tracking-widest text-muted font-mono block mb-2">EMAIL</label>
-              <input value={email} onChange={(e) => setEmail(e.target.value)} type="email" className="w-full bg-white border border-slate-200 px-4 py-2.5 text-sm text-slate-900 focus:outline-none focus:border-cyan" placeholder="you@college.edu" />
+              <input value={email} onChange={(e) => setEmail(e.target.value)} type="email" className="w-full bg-white border border-slate-200 px-4 py-2.5 text-sm text-slate-900 focus:outline-none focus:border-cyan" placeholder="you@example.com" />
             </div>
             <div>
               <label className="text-xs tracking-widest text-muted font-mono block mb-2">PASSWORD</label>
-              <input value={password} onChange={(e) => setPassword(e.target.value)} type="password" className="w-full bg-white border border-slate-200 px-4 py-2.5 text-sm text-slate-900 focus:outline-none focus:border-cyan" placeholder="••••••••" />
+              <input value={password} onChange={(e) => setPassword(e.target.value)} type="password" className="w-full bg-white border border-slate-200 px-4 py-2.5 text-sm text-slate-900 focus:outline-none focus:border-cyan" placeholder="Enter password" />
             </div>
-            <Button type="submit" className="w-full justify-center" icon={false}>
-              Log in
+            <Button type="submit" className="w-full justify-center" icon={false} disabled={loading}>
+              {loading ? "Logging in..." : "Log in"}
             </Button>
           </form>
         </Panel>
