@@ -21,11 +21,11 @@ export default function Button({
   disabled = false,
 }: Props) {
   const base =
-    "text-sm font-semibold px-6 py-3 inline-flex items-center gap-2 transition-all duration-200 rounded-xl";
+    "text-sm font-semibold px-6 py-3 inline-flex items-center justify-center gap-2 transition-all duration-200 rounded-xl focus:outline-none focus:ring-4 focus:ring-cyan/15 disabled:pointer-events-none disabled:opacity-60";
   const styles =
     variant === "primary"
-      ? "bg-cyan text-white shadow-[0_10px_25px_rgba(37,99,235,0.22)] hover:bg-blue-700"
-      : "border border-line bg-white text-ink hover:border-cyan hover:text-cyan";
+      ? "bg-cyan text-white shadow-[0_12px_28px_rgba(37,99,235,0.24)] hover:-translate-y-0.5 hover:bg-blue-700 hover:shadow-[0_16px_34px_rgba(37,99,235,0.28)]"
+      : "border border-line bg-white text-ink shadow-sm hover:-translate-y-0.5 hover:border-cyan hover:text-cyan hover:shadow-[0_12px_26px_rgba(15,23,42,0.08)]";
   const cls = `${base} ${styles} ${className}`;
 
   if (href) {

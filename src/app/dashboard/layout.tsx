@@ -10,7 +10,9 @@ export default function DashboardLayout({
     <ProtectedRoute>
       <div className="min-h-screen flex bg-slate-50">
         <Sidebar />
-        <main className="flex-1 px-6 md:px-10 py-8 max-w-6xl">{children}</main>
+        <main className="flex-1 px-5 py-6 md:px-10 md:py-8">
+          <div className="max-w-6xl">{children}</div>
+        </main>
       </div>
     </ProtectedRoute>
   );

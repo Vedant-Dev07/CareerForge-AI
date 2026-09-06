@@ -8,6 +8,10 @@ import Panel from "@/components/ui/panel";
 import SectionLabel from "@/components/ui/section-label";
 import Button from "@/components/ui/button";
 import { getSession } from "@/lib/auth";
+import { Lock, Mail, User } from "lucide-react";
+
+const fieldClass =
+  "w-full border border-line bg-white px-4 py-3 text-sm text-ink shadow-sm transition-colors placeholder:text-slate-400 focus:outline-none focus:border-cyan focus:ring-4 focus:ring-cyan/10";
 
 export default function Register() {
   const router = useRouter();
@@ -72,38 +76,57 @@ export default function Register() {
   return (
     <>
       <SiteNav />
-      <section className="max-w-sm mx-auto px-6 pt-20 pb-24 bg-grid bg-grid">
-        <SectionLabel>REGISTER</SectionLabel>
-        <h1 className="text-3xl font-black tracking-tight uppercase mb-8">
-          Create your profile.
-        </h1>
-        <Panel className="p-8">
+      <section className="max-w-5xl mx-auto px-6 pt-20 pb-24">
+        <div className="grid gap-10 lg:grid-cols-[0.9fr_1.1fr] lg:items-center">
+          <div>
+            <SectionLabel>REGISTER</SectionLabel>
+            <h1 className="text-4xl md:text-5xl font-black tracking-tight mb-4 text-ink">
+              Create your profile.
+            </h1>
+            <p className="text-muted leading-relaxed">
+              Start with your account, then complete onboarding so CareerForge AI can personalize your preparation path.
+            </p>
+          </div>
+        <Panel className="rounded-2xl p-8">
           <form onSubmit={handleSubmit} className="space-y-5">
-            {error ? <p className="text-sm text-rose-600">{error}</p> : null}
+            {error ? <p className="rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">{error}</p> : null}
             <div>
               <label className="text-xs tracking-widest text-muted font-mono block mb-2">FULL NAME</label>
-              <input value={form.name} onChange={(e) => handleChange("name", e.target.value)} type="text" className="w-full bg-white border border-slate-200 px-4 py-2.5 text-sm text-slate-900 focus:outline-none focus:border-cyan" placeholder="Full name" />
+              <div className="relative">
+                <User className="absolute left-3 top-3.5 text-muted" size={16} />
+                <input value={form.name} onChange={(e) => handleChange("name", e.target.value)} type="text" className={`${fieldClass} pl-10`} placeholder="Full name" />
+              </div>
             </div>
             <div>
               <label className="text-xs tracking-widest text-muted font-mono block mb-2">EMAIL</label>
-              <input value={form.email} onChange={(e) => handleChange("email", e.target.value)} type="email" className="w-full bg-white border border-slate-200 px-4 py-2.5 text-sm text-slate-900 focus:outline-none focus:border-cyan" placeholder="you@example.com" />
+              <div className="relative">
+                <Mail className="absolute left-3 top-3.5 text-muted" size={16} />
+                <input value={form.email} onChange={(e) => handleChange("email", e.target.value)} type="email" className={`${fieldClass} pl-10`} placeholder="you@example.com" />
+              </div>
             </div>
             <div>
               <label className="text-xs tracking-widest text-muted font-mono block mb-2">PASSWORD</label>
-              <input value={form.password} onChange={(e) => handleChange("password", e.target.value)} type="password" className="w-full bg-white border border-slate-200 px-4 py-2.5 text-sm text-slate-900 focus:outline-none focus:border-cyan" placeholder="Create password" />
+              <div className="relative">
+                <Lock className="absolute left-3 top-3.5 text-muted" size={16} />
+                <input value={form.password} onChange={(e) => handleChange("password", e.target.value)} type="password" className={`${fieldClass} pl-10`} placeholder="Create password" />
+              </div>
             </div>
             <div>
               <label className="text-xs tracking-widest text-muted font-mono block mb-2">CONFIRM PASSWORD</label>
-              <input value={form.confirmPassword} onChange={(e) => handleChange("confirmPassword", e.target.value)} type="password" className="w-full bg-white border border-slate-200 px-4 py-2.5 text-sm text-slate-900 focus:outline-none focus:border-cyan" placeholder="Confirm password" />
+              <div className="relative">
+                <Lock className="absolute left-3 top-3.5 text-muted" size={16} />
+                <input value={form.confirmPassword} onChange={(e) => handleChange("confirmPassword", e.target.value)} type="password" className={`${fieldClass} pl-10`} placeholder="Confirm password" />
+              </div>
             </div>
             <Button type="submit" className="w-full justify-center" icon={false} disabled={loading}>
               {loading ? "Creating account..." : "Create account"}
             </Button>
           </form>
         </Panel>
+        </div>
         <p className="text-sm text-muted text-center mt-6">
           Already have an account?{" "}
-          <Link href="/login" className="text-cyan hover:underline">Log in</Link>
+          <Link href="/login" className="text-cyan font-semibold hover:underline">Log in</Link>
         </p>
       </section>
     </>

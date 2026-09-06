@@ -3,7 +3,7 @@
 @tailwind utilities;
 
 :root {
-  color-scheme: dark;
+  color-scheme: light;
 }
 
 html {
@@ -11,16 +11,26 @@ html {
 }
 
 body {
-  background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+  background:
+    linear-gradient(rgba(226, 232, 240, 0.52) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(226, 232, 240, 0.52) 1px, transparent 1px),
+    linear-gradient(135deg, #f8fafc 0%, #eef6ff 48%, #f8fafc 100%);
+  background-size: 34px 34px, 34px 34px, auto;
   color: #0f172a;
   min-height: 100vh;
 }
 
 ::selection {
-  background: rgba(79, 209, 197, 0.35);
-  color: #f8fbff;
+  background: rgba(37, 99, 235, 0.18);
+  color: #0f172a;
 }
 
 * {
   box-sizing: border-box;
+}
+
+input,
+textarea,
+select {
+  border-radius: 0.75rem;
 }

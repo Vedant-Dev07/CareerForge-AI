@@ -14,7 +14,8 @@ export default function Panel({
   className?: string;
 }) {
   return (
-    <div className={`relative border border-line bg-white shadow-[0_8px_30px_rgba(15,23,42,0.06)] ${className}`}>
+    <div className={`relative overflow-hidden border border-line bg-white shadow-[0_12px_34px_rgba(15,23,42,0.07)] ${className}`}>
+      <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-cyan/35 to-transparent" />
       <div className="absolute -top-px -left-px">
         <CornerMark />
       </div>

@@ -46,10 +46,10 @@ export default function Sidebar() {
       <Link
         key={l.href}
         href={l.href}
-        className={`flex items-center gap-3 px-3 py-2 text-sm transition-colors rounded-lg ${
+        className={`flex items-center gap-3 px-3 py-2.5 text-sm transition-colors rounded-xl ${
           active
-            ? "bg-cyan/10 text-cyan border border-cyan/20"
-            : "border border-transparent text-slate-300 hover:text-white hover:bg-slate-800"
+            ? "bg-cyan/10 text-white border border-cyan/25 shadow-[0_8px_22px_rgba(37,99,235,0.14)]"
+            : "border border-transparent text-slate-300 hover:text-white hover:bg-slate-900"
         }`}
       >
         <l.icon size={16} />
@@ -59,10 +59,10 @@ export default function Sidebar() {
   };
 
   return (
-    <aside className="hidden md:flex flex-col w-60 shrink-0 border-r border-line bg-slate-950 text-slate-100 py-6">
+    <aside className="hidden md:flex flex-col w-64 shrink-0 border-r border-slate-800 bg-slate-950 text-slate-100 py-6">
       <div className="px-4 mb-6">
         <Link href="/" className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-lg bg-cyan/15 flex items-center justify-center">
+          <div className="w-8 h-8 rounded-xl bg-cyan/15 flex items-center justify-center ring-1 ring-cyan/20">
             <div className="w-3 h-3 rounded-sm bg-cyan" />
           </div>
           <span className="font-black tracking-tight text-sm">
@@ -70,8 +70,8 @@ export default function Sidebar() {
           </span>
         </Link>
       </div>
-      <nav className="flex-1 flex flex-col gap-1 px-2">{nav.map(item)}</nav>
-      <div className="flex flex-col gap-1 border-t border-slate-800 pt-3 mt-3 px-2">
+      <nav className="flex-1 flex flex-col gap-1.5 px-3">{nav.map(item)}</nav>
+      <div className="flex flex-col gap-1.5 border-t border-slate-800 pt-3 mt-3 px-3">
         {bottomNav.map(item)}
       </div>
     </aside>

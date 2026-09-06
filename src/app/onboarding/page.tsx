@@ -8,6 +8,16 @@ import Panel from "@/components/ui/panel";
 import SectionLabel from "@/components/ui/section-label";
 import Button from "@/components/ui/button";
 import { getSession } from "@/lib/auth";
+import { BriefcaseBusiness, GraduationCap, Sparkles } from "lucide-react";
+
+const fieldClass =
+  "w-full border border-line bg-white px-4 py-3 text-sm text-ink shadow-sm transition-colors placeholder:text-slate-400 focus:outline-none focus:border-cyan focus:ring-4 focus:ring-cyan/10";
+
+const onboardingHighlights = [
+  { label: "Profile", icon: GraduationCap },
+  { label: "Target role", icon: BriefcaseBusiness },
+  { label: "AI plan", icon: Sparkles },
+];
 
 export default function Onboarding() {
   const router = useRouter();
@@ -48,48 +58,66 @@ export default function Onboarding() {
   return (
     <>
       <SiteNav />
-      <section className="max-w-3xl mx-auto px-6 pt-20 pb-24 bg-grid bg-grid">
-        <SectionLabel>ONBOARDING</SectionLabel>
-        <h1 className="text-3xl font-black tracking-tight uppercase mb-8">
-          Tell us about your path.
-        </h1>
-        <Panel className="p-8">
+      <section className="max-w-5xl mx-auto px-6 pt-20 pb-24">
+        <div className="grid gap-10 lg:grid-cols-[0.85fr_1.15fr] lg:items-start">
+          <div>
+            <SectionLabel>ONBOARDING</SectionLabel>
+            <h1 className="text-4xl md:text-5xl font-black tracking-tight mb-4 text-ink">
+              Tell us about your path.
+            </h1>
+            <p className="text-muted leading-relaxed">
+              These details help CareerForge AI recommend roles, skill gaps, projects, and interview practice.
+            </p>
+            <div className="mt-8 grid gap-3 sm:grid-cols-3 lg:grid-cols-1">
+              {onboardingHighlights.map((item) => {
+                const Icon = item.icon;
+                return (
+                  <div key={item.label} className="flex items-center gap-3 rounded-2xl border border-line bg-white px-4 py-3 shadow-sm">
+                    <Icon size={17} className="text-cyan" />
+                    <span className="text-sm font-semibold text-muted">{item.label}</span>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        <Panel className="rounded-2xl p-8">
           <form onSubmit={handleSubmit} className="space-y-5">
-            {error ? <p className="text-sm text-rose-600">{error}</p> : null}
+            {error ? <p className="rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">{error}</p> : null}
             <div className="grid md:grid-cols-2 gap-5">
               <div>
                 <label className="text-xs tracking-widest text-muted font-mono block mb-2">COLLEGE</label>
-                <input value={form.college} onChange={(e) => handleChange("college", e.target.value)} className="w-full bg-white border border-slate-200 px-4 py-2.5 text-sm text-slate-900 focus:outline-none focus:border-cyan" placeholder="Enter your college" />
+                <input value={form.college} onChange={(e) => handleChange("college", e.target.value)} className={fieldClass} placeholder="Enter your college" />
               </div>
               <div>
                 <label className="text-xs tracking-widest text-muted font-mono block mb-2">DEGREE</label>
-                <input value={form.degree} onChange={(e) => handleChange("degree", e.target.value)} className="w-full bg-white border border-slate-200 px-4 py-2.5 text-sm text-slate-900 focus:outline-none focus:border-cyan" placeholder="Enter your degree" />
+                <input value={form.degree} onChange={(e) => handleChange("degree", e.target.value)} className={fieldClass} placeholder="Enter your degree" />
               </div>
             </div>
             <div className="grid md:grid-cols-2 gap-5">
               <div>
                 <label className="text-xs tracking-widest text-muted font-mono block mb-2">YEAR</label>
-                <input value={form.year} onChange={(e) => handleChange("year", e.target.value)} className="w-full bg-white border border-slate-200 px-4 py-2.5 text-sm text-slate-900 focus:outline-none focus:border-cyan" placeholder="Enter your year" />
+                <input value={form.year} onChange={(e) => handleChange("year", e.target.value)} className={fieldClass} placeholder="Enter your year" />
               </div>
               <div>
                 <label className="text-xs tracking-widest text-muted font-mono block mb-2">TARGET ROLE</label>
-                <input value={form.targetRole} onChange={(e) => handleChange("targetRole", e.target.value)} className="w-full bg-white border border-slate-200 px-4 py-2.5 text-sm text-slate-900 focus:outline-none focus:border-cyan" placeholder="Enter your target role" />
+                <input value={form.targetRole} onChange={(e) => handleChange("targetRole", e.target.value)} className={fieldClass} placeholder="Enter your target role" />
               </div>
             </div>
             <div>
               <label className="text-xs tracking-widest text-muted font-mono block mb-2">SKILLS</label>
-              <input value={form.skills} onChange={(e) => handleChange("skills", e.target.value)} className="w-full bg-white border border-slate-200 px-4 py-2.5 text-sm text-slate-900 focus:outline-none focus:border-cyan" placeholder="List your skills" />
+              <input value={form.skills} onChange={(e) => handleChange("skills", e.target.value)} className={fieldClass} placeholder="List your skills" />
             </div>
             <div>
               <label className="text-xs tracking-widest text-muted font-mono block mb-2">CAREER INTERESTS</label>
-              <textarea value={form.interests} onChange={(e) => handleChange("interests", e.target.value)} rows={4} className="w-full bg-white border border-slate-200 px-4 py-3 text-sm text-slate-900 focus:outline-none focus:border-cyan resize-none" placeholder="Describe your career interests" />
+              <textarea value={form.interests} onChange={(e) => handleChange("interests", e.target.value)} rows={4} className={`${fieldClass} resize-none`} placeholder="Describe your career interests" />
             </div>
-            <div className="flex flex-wrap gap-3">
+            <div className="flex flex-wrap items-center gap-3">
               <Button type="submit" className="justify-center" icon={false}>Save profile</Button>
-              <Link href="/dashboard" className="text-sm text-muted hover:text-ink">Skip for now</Link>
+              <Link href="/dashboard" className="text-sm font-semibold text-muted hover:text-ink">Skip for now</Link>
             </div>
           </form>
         </Panel>
+        </div>
       </section>
     </>
   );

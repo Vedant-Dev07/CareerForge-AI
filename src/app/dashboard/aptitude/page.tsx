@@ -1,6 +1,8 @@
 import DashboardHeader from "@/components/dashboard/header";
 import Panel from "@/components/ui/panel";
 import ScoreBar from "@/components/ui/score-bar";
+import StatCard from "@/components/dashboard/stat-card";
+import { Brain, CheckCircle2, Clock3, Trophy } from "lucide-react";
 
 const categories = [
   { title: "Quantitative", topics: ["Percentage", "Ratio", "Average", "Profit & loss", "Time & work", "Probability", "Permutation & combination", "Speed / distance"] },
@@ -21,31 +23,28 @@ export default function Aptitude() {
 
       <div className="grid sm:grid-cols-4 gap-4 mb-6">
         {[
-          { label: "Overall score", value: "72%" },
-          { label: "Accuracy", value: "78%" },
-          { label: "Questions solved", value: "240" },
-          { label: "Tests completed", value: "18" },
+          { label: "Overall score", value: "72%", detail: "Current aptitude level", icon: Trophy, accent: "cyan" as const },
+          { label: "Accuracy", value: "78%", detail: "Average correct rate", icon: CheckCircle2, accent: "success" as const },
+          { label: "Questions", value: "240", detail: "Problems solved", icon: Brain, accent: "forge" as const },
+          { label: "Tests", value: "18", detail: "Mocks completed", icon: Clock3, accent: "warning" as const },
         ].map((s) => (
-          <Panel key={s.label} className="p-5">
-            <div className="text-xs text-muted font-mono mb-1">{s.label.toUpperCase()}</div>
-            <div className="text-2xl font-black font-mono">{s.value}</div>
-          </Panel>
+          <StatCard key={s.label} {...s} />
         ))}
       </div>
 
-      <Panel className="p-6 mb-6">
+      <Panel className="rounded-2xl p-6 mb-6">
         <div className="text-xs tracking-widest text-muted font-mono mb-4">WEAK AREAS</div>
         <div className="space-y-4">
           {weakAreas.map((w) => (
-            <ScoreBar key={w.label} label={w.label} value={w.value} />
+            <ScoreBar key={w.label} label={w.label} value={w.value} accent="#F59E0B" />
           ))}
         </div>
       </Panel>
 
       <div className="grid md:grid-cols-3 gap-5">
         {categories.map((c) => (
-          <Panel key={c.title} className="p-6">
-            <h3 className="font-bold text-sm mb-3">{c.title}</h3>
+          <Panel key={c.title} className="rounded-2xl p-6 transition-all hover:-translate-y-1 hover:border-cyan/35">
+            <h3 className="font-bold text-sm mb-3 text-ink">{c.title}</h3>
             <ul className="space-y-1.5">
               {c.topics.map((t) => (
                 <li key={t} className="text-xs text-muted flex items-center gap-2">
