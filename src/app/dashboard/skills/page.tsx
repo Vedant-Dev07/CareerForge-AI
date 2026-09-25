@@ -1,65 +1,73 @@
+"use client";
+
+import { useEffect, useState } from "react";
 import DashboardHeader from "@/components/dashboard/header";
 import Panel from "@/components/ui/panel";
-import ScoreBar from "@/components/ui/score-bar";
-import { AlertTriangle, CheckCircle2, Code2 } from "lucide-react";
+import { CheckCircle2, Code2 } from "lucide-react";
 
-const gaps = [
-  { skill: "System design", priority: "High", value: 42, note: "Build confidence with scalable architecture patterns." },
-  { skill: "SQL", priority: "High", value: 55, note: "Practice joins, window functions, and optimization basics." },
-  { skill: "Communication", priority: "Medium", value: 68, note: "Improve structured storytelling for interviews and standups." },
-];
-
-const strengths = ["JavaScript", "React", "Problem solving", "UI fundamentals"];
+type Summary = {
+  skills: string[];
+  skillCount: number;
+  analysis?: { career: string; matchedSkills: string[]; missingSkills: string[] } | null;
+};
 
 export default function Skills() {
+  const [summary, setSummary] = useState<Summary | null>(null);
+
+  useEffect(() => {
+    fetch("/api/profile", { cache: "no-store" })
+      .then((response) => response.json())
+      .then((data: { summary?: Summary }) => setSummary(data.summary ?? { skills: [], skillCount: 0 }));
+  }, []);
+
+  const skills = summary?.skills ?? [];
+
   return (
     <>
-      <DashboardHeader title="Skill gap analyzer" subtitle="Your next steps are visible and prioritized." />
-
-      <div className="grid gap-5 lg:grid-cols-[1.1fr_0.9fr] mb-6">
+      <DashboardHeader title="Skills" subtitle="Your saved skills are shared with career recommendations and your dashboard." />
+      <div className="grid gap-5 lg:grid-cols-[1.1fr_0.9fr]">
         <Panel className="rounded-2xl p-6">
-          <div className="mb-4 flex items-center justify-between">
-            <div>
-              <div className="text-xs tracking-widest text-muted font-mono">SKILL INSIGHTS</div>
-              <h2 className="mt-2 text-xl font-black text-ink">Priority gaps</h2>
-            </div>
-            <AlertTriangle className="text-warning" size={22} />
+          <div className="mb-5">
+            <div className="text-xs tracking-widest text-muted font-mono">SAVED SKILLS</div>
+            <h2 className="mt-2 text-xl font-black text-ink">{summary ? `${summary.skillCount} skill${summary.skillCount === 1 ? "" : "s"} connected` : "Loading skills..."}</h2>
           </div>
-          <div className="space-y-5">
-            {gaps.map((gap) => (
-              <div key={gap.skill} className="rounded-2xl border border-line bg-slate-50/80 p-4">
-                <div className="mb-3 flex items-center justify-between">
-                  <div>
-                    <div className="font-bold text-ink">{gap.skill}</div>
-                    <div className="text-xs text-muted">{gap.priority} priority</div>
-                  </div>
-                  <span className="rounded-full border border-warning/20 bg-warning/10 px-3 py-1 text-xs font-semibold text-warning">
-                    Improve
-                  </span>
+          {skills.length ? (
+            <div className="grid gap-3 sm:grid-cols-2">
+              {skills.map((skill) => (
+                <div key={skill} className="flex items-center gap-3 rounded-2xl border border-line bg-slate-50/80 px-4 py-3">
+                  <CheckCircle2 className="text-success" size={17} />
+                  <span className="text-sm font-semibold capitalize text-ink">{skill}</span>
                 </div>
-                <ScoreBar label="Current confidence" value={gap.value} accent="#F59E0B" />
-                <p className="mt-3 text-sm leading-relaxed text-muted">{gap.note}</p>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          ) : (
+            <p className="text-sm leading-relaxed text-muted">No skills saved yet. Add comma-separated skills from your profile to use them across the application.</p>
+          )}
         </Panel>
-
         <Panel className="rounded-2xl p-6">
-          <div className="text-xs tracking-widest text-muted font-mono mb-4">STRENGTHS</div>
-          <div className="grid gap-3">
-            {strengths.map((skill) => (
-              <div key={skill} className="flex items-center gap-3 rounded-2xl border border-line bg-white px-4 py-3">
-                <CheckCircle2 className="text-success" size={17} />
-                <span className="text-sm font-semibold text-ink">{skill}</span>
+          <div className="mb-5">
+            <div className="text-xs tracking-widest text-muted font-mono">CAREER GAP ANALYSIS</div>
+            <h2 className="mt-2 text-xl font-black text-ink">{summary?.analysis ? summary.analysis.career : "No analysis yet"}</h2>
+          </div>
+          {summary?.analysis ? (
+            <div className="space-y-4">
+              <div>
+                <div className="mb-2 text-xs font-semibold text-success">MATCHED ({summary.analysis.matchedSkills.length})</div>
+                <p className="text-sm text-muted">{summary.analysis.matchedSkills.join(", ") || "None"}</p>
               </div>
-            ))}
-          </div>
-          <div className="mt-6 rounded-2xl border border-cyan/20 bg-cyan/10 p-4">
-            <Code2 className="mb-3 text-cyan" size={21} />
-            <p className="text-sm leading-relaxed text-muted">
-              Keep strengths visible while you close gaps. This helps balance confidence with focus.
-            </p>
-          </div>
+              <div>
+                <div className="mb-2 text-xs font-semibold text-warning">MISSING ({summary.analysis.missingSkills.length})</div>
+                <p className="text-sm text-muted">{summary.analysis.missingSkills.join(", ") || "None"}</p>
+              </div>
+            </div>
+          ) : (
+            <p className="text-sm leading-relaxed text-muted">Choose a target role and run the career analysis to generate transparent skill gaps.</p>
+          )}
+        </Panel>
+        <Panel className="rounded-2xl p-6">
+          <Code2 className="mb-4 text-cyan" size={22} />
+          <h2 className="text-lg font-black text-ink">Keep your profile current</h2>
+          <p className="mt-3 text-sm leading-relaxed text-muted">Update skills from the Profile page. The same saved list powers this page, the dashboard profile, and career recommendations.</p>
         </Panel>
       </div>
     </>

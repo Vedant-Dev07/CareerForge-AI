@@ -22,13 +22,6 @@ import ReadinessPanel from "@/components/dashboard/widgets/readiness-panel";
 import JourneyMap from "@/components/dashboard/journey-map";
 import StatCard from "@/components/dashboard/stat-card";
 
-const stats = [
-  { label: "Readiness", value: "78%", detail: "Overall placement signal", icon: Target, accent: "cyan" as const },
-  { label: "Career fit", value: "92%", detail: "Strong target-role match", icon: BriefcaseBusiness, accent: "success" as const },
-  { label: "Resume", value: "84", detail: "ATS-ready content score", icon: FileText, accent: "forge" as const },
-  { label: "Practice", value: "18", detail: "Aptitude tests completed", icon: BarChart3, accent: "warning" as const },
-];
-
 const actions = [
   { title: "Complete aptitude sprint", body: "Focus on probability, time and work, and logical puzzles.", href: "/dashboard/aptitude", icon: LineChart },
   { title: "Improve resume keywords", body: "Tune your profile for the role you want next.", href: "/dashboard/resume", icon: FileText },
@@ -37,12 +30,20 @@ const actions = [
 
 const quickLinks = [
   { href: "/dashboard/career", label: "CAREER MATCH", title: "Strong fit detected", icon: BriefcaseBusiness },
-  { href: "/dashboard/skills", label: "TOP GAP", title: "System design and SQL", icon: Target },
+{ href: "/dashboard/skills", label: "TOP GAP", title: "Review your saved skills", icon: Target },
   { href: "/dashboard/interview", label: "INTERVIEW PREP", title: "Start your first mock round", icon: Mic },
 ];
 
 export default function Dashboard() {
   const [userName, setUserName] = useState("Student");
+  const [summary, setSummary] = useState<{
+    careerFit: number;
+    skillCount: number;
+    skills: string[];
+    resumeScore?: number | null;
+    analysis?: { career: string; matchedSkills: string[]; missingSkills: string[]; recommendations: string[] } | null;
+  } | null>(null);
+  const [roadmap, setRoadmap] = useState<{ progress: number; title: string; tasks: { title: string; status: string }[] } | null>(null);
 
   useEffect(() => {
     getSession().then((session) => {
@@ -50,7 +51,32 @@ export default function Dashboard() {
         setUserName(session.name);
       }
     });
+    fetch("/api/profile", { cache: "no-store" })
+      .then((response) => response.json())
+      .then((data: { summary?: typeof summary }) => setSummary(data.summary ?? null));
+    fetch("/api/roadmap", { cache: "no-store" })
+      .then((response) => response.json())
+      .then((data: { roadmap?: typeof roadmap | null }) => setRoadmap(data.roadmap ?? null));
   }, []);
+
+  const careerFit = summary?.careerFit ?? 0;
+  const skillsScore = summary?.analysis
+    ? Math.round((summary.analysis.matchedSkills.length / Math.max(1, summary.analysis.matchedSkills.length + summary.analysis.missingSkills.length)) * 100)
+    : Math.min(95, summary ? summary.skillCount * 10 : 0);
+  const stats = [
+    { label: "Readiness", value: summary ? `${Math.round((careerFit + skillsScore) / 2)}%` : "—", detail: "Based on your saved profile", icon: Target, accent: "cyan" as const },
+    { label: "Career fit", value: summary ? `${careerFit}%` : "—", detail: "Based on target role and skills", icon: BriefcaseBusiness, accent: "success" as const },
+    { label: "Resume", value: summary?.resumeScore != null ? `${summary.resumeScore}%` : "—", detail: summary?.resumeScore != null ? "ATS Match Score" : "Add a resume to calculate", icon: FileText, accent: "forge" as const },
+    { label: "Learning", value: roadmap ? `${roadmap.progress}%` : "—", detail: roadmap ? "Roadmap task progress" : "Generate your roadmap", icon: BarChart3, accent: "warning" as const },
+  ];
+  const dashboardActions = summary?.analysis?.recommendations.length
+    ? summary.analysis.recommendations.slice(0, 3).map((recommendation) => ({
+        title: recommendation,
+        body: `Close this gap for ${summary.analysis?.career ?? "your target role"}.`,
+        href: "/dashboard/career",
+        icon: Target,
+      }))
+    : actions;
 
   return (
     <>
@@ -76,12 +102,12 @@ export default function Dashboard() {
           <BrainCircuit size={22} className="text-cyan" />
         </div>
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
-          <ScoreBar label="Career match" value={92} accent="#2563EB" />
-          <ScoreBar label="Resume score" value={84} accent="#4F46E5" />
-          <ScoreBar label="Skills" value={76} accent="#16A34A" />
+          <ScoreBar label="Career match" value={careerFit} accent="#2563EB" />
+          <ScoreBar label="Resume score" value={0} accent="#4F46E5" />
+          <ScoreBar label="Skills" value={skillsScore} accent="#16A34A" />
           <ScoreBar label="Interview" value={71} accent="#F59E0B" />
           <ScoreBar label="Aptitude" value={72} accent="#2563EB" />
-          <ScoreBar label="Learning progress" value={64} accent="#4F46E5" />
+          <ScoreBar label="Learning progress" value={roadmap?.progress ?? 0} accent="#4F46E5" />
         </div>
       </Panel>
 
@@ -94,7 +120,7 @@ export default function Dashboard() {
           <CheckCircle2 size={21} className="text-success" />
         </div>
         <div className="grid gap-4 md:grid-cols-3">
-          {actions.map((action) => {
+          {dashboardActions.map((action) => {
             const Icon = action.icon;
             return (
               <Link key={action.title} href={action.href} className="group rounded-2xl border border-line bg-slate-50/80 p-4 transition-all hover:-translate-y-1 hover:border-cyan/35 hover:bg-white">
@@ -120,7 +146,9 @@ export default function Dashboard() {
               <Panel className="rounded-2xl p-5 transition-all hover:-translate-y-1 hover:border-cyan/40">
                 <Icon size={18} className="mb-4 text-cyan" />
                 <div className="text-xs text-muted font-mono mb-1">{item.label}</div>
-                <div className="font-bold text-ink">{item.title}</div>
+                <div className="font-bold text-ink">
+                  {item.label === "CAREER MATCH" && summary ? `${careerFit}% fit for ${summary.analysis?.career ?? "your profile"}` : item.label === "TOP GAP" && summary ? summary.analysis?.missingSkills[0] ?? `${summary.skillCount} saved skills` : item.title}
+                </div>
               </Panel>
             </Link>
           );

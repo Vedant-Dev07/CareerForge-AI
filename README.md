@@ -5,11 +5,11 @@ Student-only AI placement preparation platform. No admin panel.
 ## Stack
 Next.js (App Router) · React · TypeScript · Tailwind CSS · lucide-react
 
-This repo contains the full frontend layout and design for every route in
-the product spec — landing site, auth pages, and the entire student
-dashboard (11 modules). Data on every page is mocked/static; there is no
-database, auth, or AI wiring yet. That's the next phase (see the build
-order below).
+This repo contains the frontend layout for the product plus working
+authentication, PostgreSQL persistence for student profiles and skills, and
+a database-backed career skill matching foundation. The remaining dashboard
+modules are still being implemented incrementally; they must not be treated
+as complete merely because their UI exists.
 
 ## Run locally
 
@@ -51,7 +51,25 @@ technical labels, corner-bracketed panels.
 
 ## Next steps (per the build order)
 
-1. Wire up PostgreSQL + Prisma (`prisma/schema.prisma`)
-2. Add Auth.js and protect `/dashboard/*`
-3. Replace mock data in each dashboard page with real API calls
-4. Add the Gemini-backed services (career, resume, interview, mentor)
+1. Set `DATABASE_URL` and `SESSION_SECRET` in `.env`
+2. Apply migrations with `npx prisma migrate deploy`
+3. Seed career roles with `npm run db:seed`
+4. Run `npm run dev`
+
+## Profile and career analysis
+
+Onboarding and `/dashboard/profile` save the authenticated student's profile
+to `StudentProfile`, `Skill`, and `StudentSkill`. The Career Intelligence page
+loads career roles from PostgreSQL and calls `POST /api/career/analyze`.
+That endpoint compares the student's saved skills with the selected role's
+required skills and persists each result in `CareerAnalysis`.
+
+The career dataset can be reseeded safely:
+
+```bash
+npm run db:seed
+```
+
+The matching engine is intentionally transparent and rule-based at this
+stage. AI services for career explanations, resume analysis, interviews, and
+mentor conversations are future work.

@@ -1,3 +1,6 @@
+"use client";
+
+import { useState } from "react";
 import DashboardHeader from "@/components/dashboard/header";
 import Panel from "@/components/ui/panel";
 import Button from "@/components/ui/button";
@@ -5,6 +8,14 @@ import ScoreBar from "@/components/ui/score-bar";
 import { MessageSquareText, Mic, Sparkles } from "lucide-react";
 
 export default function Interview() {
+  const prompts = [
+    "Explain how you would improve the performance of a slow React dashboard with many charts and filters.",
+    "How would you design a reusable data-fetching hook for a React application?",
+    "Tell us about a project where you had to debug a difficult frontend issue.",
+  ];
+  const [promptIndex, setPromptIndex] = useState(0);
+  const [started, setStarted] = useState(false);
+
   return (
     <>
       <DashboardHeader title="AI mock interview" subtitle="Practice role-focused questions with structured feedback." />
@@ -26,12 +37,23 @@ export default function Interview() {
               SAMPLE PROMPT
             </div>
             <p className="text-sm leading-relaxed text-muted">
-              Explain how you would improve the performance of a slow React dashboard with many charts and filters.
+              {prompts[promptIndex]}
             </p>
           </div>
           <div className="mt-6 flex flex-wrap gap-3">
-            <Button icon={false}>Start interview</Button>
-            <Button icon={false} variant="secondary">Practice question</Button>
+            <Button icon={false} onClick={() => setStarted(true)}>
+              {started ? "Interview in progress" : "Start interview"}
+            </Button>
+            <Button
+              icon={false}
+              variant="secondary"
+              onClick={() => {
+                setStarted(true);
+                setPromptIndex((index) => (index + 1) % prompts.length);
+              }}
+            >
+              Practice question
+            </Button>
           </div>
         </Panel>
 

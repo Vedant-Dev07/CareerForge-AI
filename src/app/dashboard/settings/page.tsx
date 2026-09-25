@@ -1,3 +1,7 @@
+"use client";
+
+import { useState } from "react";
+import { useRouter } from "next/navigation";
 import DashboardHeader from "@/components/dashboard/header";
 import Panel from "@/components/ui/panel";
 import { Settings as SettingsIcon, SlidersHorizontal } from "lucide-react";
@@ -10,6 +14,15 @@ const groups = [
 ];
 
 export default function Settings() {
+  const router = useRouter();
+  const [managedSetting, setManagedSetting] = useState("");
+
+  const logout = async () => {
+    await fetch("/api/auth/logout", { method: "POST" });
+    router.replace("/login");
+    router.refresh();
+  };
+
   return (
     <>
       <DashboardHeader title="Settings" subtitle="Account, notifications, AI preferences and privacy." />
@@ -24,14 +37,29 @@ export default function Settings() {
               {g.items.map((it) => (
                 <li key={it} className="flex items-center justify-between text-sm">
                   <span className="text-muted">{it}</span>
-                  <button className="text-xs text-cyan hover:underline">Manage</button>
+                  <button
+                    type="button"
+                    className="text-xs text-cyan hover:underline"
+                    onClick={() => setManagedSetting(it)}
+                  >
+                    Manage
+                  </button>
                 </li>
               ))}
             </ul>
           </Panel>
         ))}
       </div>
-      <button className="mt-6 inline-flex items-center gap-2 rounded-xl border border-line bg-white px-4 py-2 text-sm font-semibold text-muted shadow-sm hover:text-ink">
+      {managedSetting && (
+        <p className="mt-5 text-sm text-cyan" role="status">
+          {managedSetting} is managed through your saved profile and account settings.
+        </p>
+      )}
+      <button
+        type="button"
+        onClick={logout}
+        className="mt-6 inline-flex items-center gap-2 rounded-xl border border-line bg-white px-4 py-2 text-sm font-semibold text-muted shadow-sm hover:text-ink"
+      >
         <SettingsIcon size={16} />
         Log out
       </button>

@@ -1,0 +1,214 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"label": "verify-production-build",
+			"type": "shell",
+			"command": "npm",
+			"args": [
+				"run",
+				"build"
+			],
+			"isBackground": false,
+			"problemMatcher": [
+				"$tsc"
+			]
+		},
+		{
+			"label": "verify-typescript",
+			"type": "shell",
+			"command": "npx",
+			"args": [
+				"tsc",
+				"--noEmit"
+			],
+			"isBackground": false,
+			"problemMatcher": [
+				"$tsc"
+			]
+		},
+		{
+			"label": "verify-typescript-after-ui-fixes",
+			"type": "shell",
+			"command": "npx",
+			"args": [
+				"tsc",
+				"--noEmit"
+			],
+			"isBackground": false,
+			"problemMatcher": [
+				"$tsc"
+			]
+		},
+		{
+			"label": "check-prisma-migrations",
+			"type": "shell",
+			"command": "npx",
+			"args": [
+				"prisma",
+				"migrate",
+				"status"
+			],
+			"isBackground": false,
+			"problemMatcher": []
+		},
+		{
+			"label": "seed-career-roles",
+			"type": "shell",
+			"command": "npm",
+			"args": [
+				"run",
+				"db:seed"
+			],
+			"isBackground": false,
+			"problemMatcher": []
+		},
+		{
+			"label": "verify-next-build",
+			"type": "shell",
+			"command": "npx",
+			"args": [
+				"next",
+				"build"
+			],
+			"isBackground": false,
+			"problemMatcher": [
+				"$tsc"
+			]
+		},
+		{
+			"label": "clear-next-cache",
+			"type": "shell",
+			"command": "node",
+			"args": [
+				"-e",
+				"const fs=require('fs'); const path='.next'; console.log('exists:', fs.existsSync(path)); if (fs.existsSync(path)) { fs.rmSync(path,{recursive:true,force:true}); } console.log('removed:', !fs.existsSync(path));"
+			],
+			"isBackground": false,
+			"problemMatcher": []
+		},
+		{
+			"label": "clear-next-cache",
+			"type": "shell",
+			"command": "cmd.exe",
+			"args": [
+				"/c",
+				"if exist .next rmdir /s /q .next"
+			],
+			"isBackground": false,
+			"problemMatcher": []
+		},
+		{
+			"label": "remove-stale-next-output-20260925",
+			"type": "shell",
+			"command": "cmd.exe /c if exist .next rmdir /s /q .next",
+			"isBackground": false,
+			"problemMatcher": []
+		},
+		{
+			"label": "run-cache-clear-script",
+			"type": "shell",
+			"command": "node",
+			"args": [
+				"scripts/clear-next-cache.cjs"
+			],
+			"isBackground": false,
+			"problemMatcher": []
+		},
+		{
+			"label": "start-next-dev-after-cache-clear",
+			"type": "shell",
+			"command": "npm",
+			"args": [
+				"run",
+				"dev"
+			],
+			"isBackground": true,
+			"problemMatcher": []
+		},
+		{
+			"label": "phase2-prisma-status",
+			"type": "shell",
+			"command": "npx",
+			"args": [
+				"prisma",
+				"migrate",
+				"status"
+			],
+			"isBackground": false,
+			"problemMatcher": []
+		},
+		{
+			"label": "run-tsc-phase2",
+			"type": "shell",
+			"command": "npx tsc --noEmit",
+			"isBackground": false,
+			"problemMatcher": [
+				"$tsc"
+			]
+		},
+		{
+			"label": "run-build-phase2",
+			"type": "shell",
+			"command": "npx next build",
+			"isBackground": false,
+			"problemMatcher": [
+				"$tsc"
+			]
+		},
+		{
+			"label": "start-verification-server",
+			"type": "shell",
+			"command": "npm run dev",
+			"isBackground": true,
+			"problemMatcher": []
+		},
+		{
+			"label": "start-clean-verification-server",
+			"type": "shell",
+			"command": "npx",
+			"args": [
+				"next",
+				"dev",
+				"-p",
+				"3010"
+			],
+			"isBackground": true,
+			"problemMatcher": []
+		},
+		{
+			"label": "start-production-verification-server",
+			"type": "shell",
+			"command": "npx",
+			"args": [
+				"next",
+				"start",
+				"-p",
+				"3020"
+			],
+			"isBackground": true,
+			"problemMatcher": []
+		},
+		{
+			"label": "fresh-next-server-3030",
+			"type": "shell",
+			"command": "npm run dev -- -p 3030",
+			"isBackground": true,
+			"problemMatcher": []
+		},
+		{
+			"label": "cleanup-phase2-test-users",
+			"type": "shell",
+			"command": "node scripts/cleanup-phase2-test-users.cjs",
+			"isBackground": false,
+			"problemMatcher": []
+		},
+		{
+			"label": "phase3-migrate-status",
+			"type": "shell",
+			"command": "npx prisma migrate status",
+			"isBackground": false,
+			"problemMatcher": []
+		}
+	]
+}

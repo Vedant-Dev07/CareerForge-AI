@@ -7,9 +7,13 @@ import { CheckCircle2, Mail, UserRound } from "lucide-react";
 
 export default function ProfileCard() {
   const [session, setSession] = useState<{ name: string; email: string; onboardingComplete: boolean } | null>(null);
+  const [profile, setProfile] = useState<{ college: string; degree: string; targetRole: string; skills: string } | null>(null);
 
   useEffect(() => {
     getSession().then(setSession);
+    fetch("/api/profile", { cache: "no-store" })
+      .then((response) => response.json())
+      .then((data: { profile?: typeof profile }) => setProfile(data.profile ?? null));
   }, []);
 
   if (!session) return null;
@@ -33,6 +37,22 @@ export default function ProfileCard() {
             <div className="truncate font-semibold text-ink">{session.email}</div>
           </div>
         </div>
+        {profile ? (
+          <>
+            <div className="rounded-2xl border border-line bg-slate-50/80 px-4 py-3">
+              <div className="text-xs text-muted">Education</div>
+              <div className="font-semibold text-ink">{profile.degree || "Degree pending"}{profile.college ? ` · ${profile.college}` : ""}</div>
+            </div>
+            <div className="rounded-2xl border border-line bg-slate-50/80 px-4 py-3">
+              <div className="text-xs text-muted">Target role</div>
+              <div className="font-semibold text-ink">{profile.targetRole || "Not set"}</div>
+            </div>
+            <div className="rounded-2xl border border-line bg-slate-50/80 px-4 py-3">
+              <div className="text-xs text-muted">Skills</div>
+              <div className="font-semibold text-ink">{profile.skills || "Add skills from Edit profile"}</div>
+            </div>
+          </>
+        ) : null}
         <div className="flex items-center gap-3 rounded-2xl border border-line bg-slate-50/80 px-4 py-3">
           <CheckCircle2 size={16} className={session.onboardingComplete ? "text-success" : "text-warning"} />
           <div>

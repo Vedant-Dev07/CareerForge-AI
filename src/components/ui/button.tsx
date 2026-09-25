@@ -9,6 +9,7 @@ type Props = {
   icon?: boolean;
   type?: "button" | "submit";
   disabled?: boolean;
+  onClick?: () => void;
 };
 
 export default function Button({
@@ -19,6 +20,7 @@ export default function Button({
   icon = true,
   type = "button",
   disabled = false,
+  onClick,
 }: Props) {
   const base =
     "text-sm font-semibold px-6 py-3 inline-flex items-center justify-center gap-2 transition-all duration-200 rounded-xl focus:outline-none focus:ring-4 focus:ring-cyan/15 disabled:pointer-events-none disabled:opacity-60";
@@ -37,7 +39,7 @@ export default function Button({
     );
   }
   return (
-    <button type={type} className={cls} disabled={disabled}>
+    <button type={type} className={cls} disabled={disabled} onClick={onClick}>
       {children}
       {icon && <ArrowRight size={15} />}
     </button>

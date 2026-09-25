@@ -223,11 +223,11 @@ function FlowColumn({ label, items, accent }: { label: string; items: string[]; 
 
 export default function Home() {
   return (
-    <>
+    <div className="landing-page">
       <SiteNav />
 
-      <section className="max-w-6xl mx-auto px-6 pt-14 pb-16 grid lg:grid-cols-[1.02fr_0.98fr] gap-12 items-center">
-        <div>
+      <section className="landing-hero max-w-6xl mx-auto px-6 pt-14 pb-16 grid lg:grid-cols-[1.02fr_0.98fr] gap-12 items-center">
+        <div className="landing-reveal landing-delay-1">
           <div className="mb-6 inline-flex flex-wrap items-center gap-2 rounded-full border border-cyan/20 bg-white/75 px-3 py-1.5 text-xs tracking-[0.2em] text-cyan font-mono shadow-sm">
             <span>CAREERFORGE AI</span>
             <span className="text-line">/</span>
@@ -256,7 +256,7 @@ export default function Home() {
           </div>
         </div>
 
-        <Panel className="rounded-[28px] p-5 sm:p-6">
+        <Panel className="landing-dashboard-preview rounded-[28px] p-5 sm:p-6">
           <div className="mb-5 flex items-center justify-between gap-4 border-b border-line pb-4">
             <div>
               <div className="text-xs tracking-[0.2em] text-muted font-mono">DASHBOARD PREVIEW</div>
@@ -297,7 +297,7 @@ export default function Home() {
         </Panel>
       </section>
 
-      <section className="border-y border-line bg-white/70">
+      <section className="landing-section border-y border-line bg-white/70">
         <div className="max-w-6xl mx-auto px-6 py-8">
           <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
             <div className="text-sm font-black text-ink">Everything You Need for Placement Preparation</div>
@@ -307,7 +307,7 @@ export default function Home() {
             {valueStrip.map((item) => {
               const Icon = item.icon;
               return (
-                <div key={item.title} className="flex items-center gap-3 rounded-2xl border border-line bg-white px-4 py-3 shadow-sm transition-all hover:-translate-y-0.5 hover:border-cyan/30 hover:shadow-[0_12px_26px_rgba(15,23,42,0.07)]">
+                <div key={item.title} className="landing-float flex items-center gap-3 rounded-2xl border border-line bg-white px-4 py-3 shadow-sm transition-all hover:-translate-y-0.5 hover:border-cyan/30 hover:shadow-[0_12px_26px_rgba(15,23,42,0.07)]">
                   <Icon size={17} className="text-cyan" />
                   <span className="text-sm font-semibold text-muted">{item.title}</span>
                 </div>
@@ -317,7 +317,7 @@ export default function Home() {
         </div>
       </section>
 
-      <section className="max-w-6xl mx-auto px-6 py-20">
+      <section className="landing-section max-w-6xl mx-auto px-6 py-20">
         <SectionLabel>THE PROBLEM</SectionLabel>
         <div className="grid gap-10 lg:grid-cols-[0.85fr_1.15fr] lg:items-start">
           <div>
@@ -337,7 +337,7 @@ export default function Home() {
         </div>
       </section>
 
-      <section id="how" className="border-t border-line bg-white/60">
+      <section id="how" className="landing-section border-t border-line bg-white/60">
         <div className="max-w-6xl mx-auto px-6 py-20">
           <SectionLabel>HOW CAREERFORGE AI WORKS</SectionLabel>
           <h2 className="text-3xl font-black tracking-tight mb-12 max-w-2xl text-ink">
@@ -345,7 +345,7 @@ export default function Home() {
           </h2>
           <div className="grid gap-5 md:grid-cols-5">
             {workflow.map((step, index) => (
-              <div key={step.title} className="relative rounded-2xl border border-line bg-white p-5 shadow-[0_8px_24px_rgba(15,23,42,0.04)]">
+              <div key={step.title} className="landing-card relative rounded-2xl border border-line bg-white p-5 shadow-[0_8px_24px_rgba(15,23,42,0.04)]">
                 <div className="mb-4 flex h-9 w-9 items-center justify-center rounded-xl bg-cyan/10 text-sm font-black text-cyan">
                   {index + 1}
                 </div>
@@ -357,7 +357,7 @@ export default function Home() {
         </div>
       </section>
 
-      <section id="features" className="max-w-6xl mx-auto px-6 py-20 border-t border-line">
+      <section id="features" className="landing-section max-w-6xl mx-auto px-6 py-20 border-t border-line">
         <SectionLabel>EVERYTHING IN ONE PLATFORM</SectionLabel>
         <h2 className="text-3xl font-black tracking-tight mb-4 max-w-2xl text-ink">
           Core modules built around the placement journey.
@@ -371,7 +371,7 @@ export default function Home() {
             return (
               <Panel
                 key={module.title}
-                className={`group rounded-2xl p-6 transition-all duration-200 hover:-translate-y-1 hover:shadow-[0_16px_38px_rgba(15,23,42,0.09)] ${
+                className={`landing-card group rounded-2xl p-6 transition-all duration-200 hover:-translate-y-1 hover:shadow-[0_16px_38px_rgba(15,23,42,0.09)] ${
                   index === 0 || index === 3 ? "bg-slate-50" : ""
                 }`}
               >
@@ -389,7 +389,7 @@ export default function Home() {
         </div>
       </section>
 
-      <section className="border-t border-line bg-white/60">
+      <section className="landing-section border-t border-line bg-white/60">
         <div className="max-w-6xl mx-auto px-6 py-20 grid gap-10 lg:grid-cols-[0.9fr_1.1fr] items-center">
           <div>
             <SectionLabel>PERSONALIZATION</SectionLabel>
@@ -424,7 +424,7 @@ export default function Home() {
         </div>
       </section>
 
-      <section className="max-w-6xl mx-auto px-6 py-20 border-t border-line">
+      <section className="landing-section max-w-6xl mx-auto px-6 py-20 border-t border-line">
         <SectionLabel>ROLE-BASED PREPARATION</SectionLabel>
         <h2 className="text-3xl font-black tracking-tight mb-4 text-ink">Prepare for the Role You Want</h2>
         <p className="mb-10 max-w-2xl text-sm leading-relaxed text-muted">
@@ -433,7 +433,7 @@ export default function Home() {
         </p>
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {roles.map((role) => (
-            <div key={role} className="rounded-2xl border border-line bg-white p-5 transition-all hover:border-cyan hover:shadow-[0_12px_30px_rgba(15,23,42,0.07)]">
+            <div key={role} className="landing-card rounded-2xl border border-line bg-white p-5 transition-all hover:border-cyan hover:shadow-[0_12px_30px_rgba(15,23,42,0.07)]">
               <BriefcaseBusiness className="mb-4 text-cyan" size={20} />
               <h3 className="mb-3 text-base font-bold text-ink">{role}</h3>
               <div className="flex flex-wrap gap-2">
@@ -448,7 +448,7 @@ export default function Home() {
         </div>
       </section>
 
-      <section className="border-t border-line bg-white/60">
+      <section className="landing-section border-t border-line bg-white/60">
         <div className="max-w-6xl mx-auto px-6 py-20">
           <SectionLabel>CONNECTED JOURNEY</SectionLabel>
           <h2 className="text-3xl font-black tracking-tight mb-4 text-ink">
@@ -460,7 +460,7 @@ export default function Home() {
           </p>
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             {resumeJourney.map((item, index) => (
-              <div key={item} className="rounded-2xl border border-line bg-white p-5">
+              <div key={item} className="landing-card rounded-2xl border border-line bg-white p-5">
                 <div className="mb-3 flex items-center justify-between">
                   <span className="text-xs font-mono text-forge">{String(index + 1).padStart(2, "0")}</span>
                   {index < resumeJourney.length - 1 ? <ChevronRight size={16} className="text-muted" /> : <CheckCircle2 size={16} className="text-success" />}
@@ -472,7 +472,7 @@ export default function Home() {
         </div>
       </section>
 
-      <section className="max-w-6xl mx-auto px-6 py-20 border-t border-line">
+      <section className="landing-section max-w-6xl mx-auto px-6 py-20 border-t border-line">
         <div className="grid gap-10 lg:grid-cols-[0.85fr_1.15fr] items-center">
           <div>
             <SectionLabel>PLACEMENT READINESS</SectionLabel>
@@ -501,13 +501,13 @@ export default function Home() {
         </div>
       </section>
 
-      <section className="border-t border-line bg-white/60">
+      <section className="landing-section border-t border-line bg-white/60">
         <div className="max-w-6xl mx-auto px-6 py-20">
           <SectionLabel>STUDENT JOURNEY</SectionLabel>
           <h2 className="text-3xl font-black tracking-tight mb-12 text-ink">Your Complete Placement Journey</h2>
           <div className="grid gap-4 md:grid-cols-7">
             {studentJourney.map((stage, index) => (
-              <div key={stage.title} className="rounded-2xl border border-line bg-white p-4">
+              <div key={stage.title} className="landing-card rounded-2xl border border-line bg-white p-4">
                 <div className="mb-3 flex h-8 w-8 items-center justify-center rounded-xl bg-forge/10 text-xs font-black text-forge">
                   {index + 1}
                 </div>
@@ -523,7 +523,7 @@ export default function Home() {
         <SectionLabel>WHY CAREERFORGE AI</SectionLabel>
         <h2 className="text-3xl font-black tracking-tight mb-12 text-ink">A cleaner way to prepare for placements.</h2>
         <div className="grid gap-6 md:grid-cols-2">
-          <div className="rounded-[28px] border border-line bg-white p-6">
+          <div className="landing-card rounded-[28px] border border-line bg-white p-6">
             <h3 className="mb-5 text-lg font-black text-ink">Traditional Preparation</h3>
             <div className="space-y-3">
               {traditional.map((item) => (
@@ -534,7 +534,7 @@ export default function Home() {
               ))}
             </div>
           </div>
-          <div className="rounded-[28px] border border-cyan/30 bg-cyan/10 p-6">
+          <div className="landing-card rounded-[28px] border border-cyan/30 bg-cyan/10 p-6">
             <h3 className="mb-5 text-lg font-black text-ink">CareerForge AI</h3>
             <div className="space-y-3">
               {careerForge.map((item) => (
@@ -560,7 +560,7 @@ export default function Home() {
             </div>
             <div className="grid gap-4 sm:grid-cols-2">
               {futureEnhancements.map((item) => (
-                <div key={item} className="rounded-2xl border border-line bg-white p-5">
+                <div key={item} className="landing-card rounded-2xl border border-line bg-white p-5">
                   <Rocket className="mb-4 text-forge" size={19} />
                   <h3 className="text-sm font-bold text-ink">{item}</h3>
                 </div>
@@ -570,8 +570,8 @@ export default function Home() {
         </div>
       </section>
 
-      <section className="max-w-6xl mx-auto px-6 py-24 border-t border-line">
-        <Panel className="rounded-[32px] p-8 text-center sm:p-12">
+      <section className="landing-section max-w-6xl mx-auto px-6 py-24 border-t border-line">
+        <Panel className="landing-cta rounded-[32px] p-8 text-center sm:p-12">
           <div className="inline-flex mb-4 items-center justify-center rounded-full border border-cyan/40 bg-cyan/10 px-3 py-1 text-xs tracking-[0.2em] text-cyan font-mono">
             <Sparkles size={14} className="mr-2" />
             START TODAY
@@ -592,6 +592,6 @@ export default function Home() {
       </section>
 
       <SiteFooter />
-    </>
+    </div>
   );
 }

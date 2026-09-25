@@ -43,6 +43,19 @@ model StudentProfile {
   cgpa              Float?
   careerGoal        String?
   targetDomain      String?
+  preferredDomain   String?
+  preferredJobType  String?
+  programmingLanguages String?
+  frameworks        String?
+  databases         String?
+  tools             String?
+  certifications    String?
+  projects          String?
+  experience        String?
+  github            String?
+  linkedin          String?
+  portfolio         String?
+  targetCareerId    String?
   profileCompletion Int     @default(0)
   createdAt         DateTime @default(now())
   updatedAt         DateTime @updatedAt
@@ -59,9 +72,12 @@ model StudentProfile {
   readinessScores         ReadinessScore[]
   mentorConversations     MentorConversation[]
   notifications           Notification[]
+  targetCareer            CareerRole?            @relation(fields: [targetCareerId], references: [id], onDelete: SetNull)
+  careerAnalyses          CareerAnalysis[]
 
   @@index([userId])
   @@index([targetDomain])
+  @@index([targetCareerId])
 }
 
 // ============================================================
@@ -116,8 +132,28 @@ model CareerRole {
   skillGaps             SkillGap[]
   learningRoadmaps      LearningRoadmap[]
   skillRelations        Skill[]               @relation("CareerRoleRequiredSkills")
+  targetProfiles        StudentProfile[]
+  analyses              CareerAnalysis[]
+  resumes               Resume[]
 
   @@index([domain])
+}
+
+model CareerAnalysis {
+  id               String   @id @default(cuid())
+  studentProfileId String
+  careerRoleId     String
+  matchPercentage  Int
+  matchedSkills    String[]
+  missingSkills    String[]
+  recommendations String[]
+  createdAt        DateTime @default(now())
+
+  studentProfile StudentProfile @relation(fields: [studentProfileId], references: [id], onDelete: Cascade)
+  careerRole     CareerRole     @relation(fields: [careerRoleId], references: [id], onDelete: Cascade)
+
+  @@index([studentProfileId, createdAt])
+  @@index([careerRoleId])
 }
 
 model CareerRecommendation {
@@ -218,29 +254,38 @@ model Resume {
   id               String   @id @default(cuid())
   studentProfileId String
   fileName         String
-  fileUrl          String
+  fileUrl          String?
   fileType         String   // PDF, DOCX
+  fileSize         Int?
+  extractedText    String?
+  targetCareerId   String?
+  status           String   @default("PENDING")
   createdAt        DateTime @default(now())
   updatedAt        DateTime @updatedAt
 
   studentProfile StudentProfile @relation(fields: [studentProfileId], references: [id], onDelete: Cascade)
   analysis        ResumeAnalysis?
+  targetCareer    CareerRole?   @relation(fields: [targetCareerId], references: [id], onDelete: SetNull)
 
   @@index([studentProfileId])
+  @@index([targetCareerId])
 }
 
 model ResumeAnalysis {
-  id               String   @id @default(cuid())
-  resumeId         String   @unique
-  overallScore     Int      // 0-100
-  atsScore         Int      // 0-100
-  contentScore     Int      // 0-100
-  structureScore   Int      // 0-100
-  skillsScore      Int      // 0-100
-  keywordScore     Int      // 0-100
-  readabilityScore Int      // 0-100
-  feedback         String?  // JSON string of detailed feedback
-  createdAt        DateTime @default(now())
+  id                String   @id @default(cuid())
+  resumeId          String   @unique
+  atsScore          Int      // 0-100
+  matchedSkills     String[]
+  missingSkills     String[]
+  detectedSkills    String[]
+  keywords          String[]
+  recommendations   String[]
+  educationSummary  String?
+  experienceSummary String?
+  projectSummary    String?
+  sectionScore      Int      // 0-100
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
 
   resume Resume @relation(fields: [resumeId], references: [id], onDelete: Cascade)
 
