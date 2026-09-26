@@ -9,9 +9,11 @@ function CornerMark({ className = "" }: { className?: string }) {
 export default function Panel({
   children,
   className = "",
+  title,
 }: {
   children: React.ReactNode;
   className?: string;
+  title?: string;
 }) {
   return (
     <div className={`relative overflow-hidden border border-line bg-white shadow-[0_12px_34px_rgba(15,23,42,0.07)] ${className}`}>
@@ -28,6 +30,11 @@ export default function Panel({
       <div className="absolute -bottom-px -right-px rotate-180">
         <CornerMark />
       </div>
+      {title && (
+        <h2 className="border-b border-line px-5 py-4 text-base font-semibold text-ink">
+          {title}
+        </h2>
+      )}
       {children}
     </div>
   );
