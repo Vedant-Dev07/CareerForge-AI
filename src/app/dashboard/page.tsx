@@ -44,6 +44,12 @@ export default function Dashboard() {
     analysis?: { career: string; matchedSkills: string[]; missingSkills: string[]; recommendations: string[] } | null;
   } | null>(null);
   const [roadmap, setRoadmap] = useState<{ progress: number; title: string; tasks: { title: string; status: string }[] } | null>(null);
+  const [aptitudeSummary, setAptitudeSummary] = useState<{
+    latestScore: number | null;
+    averageScore: number | null;
+    testsCompleted: number;
+    accuracy: number | null;
+  } | null>(null);
 
   useEffect(() => {
     getSession().then((session) => {
@@ -57,6 +63,12 @@ export default function Dashboard() {
     fetch("/api/roadmap", { cache: "no-store" })
       .then((response) => response.json())
       .then((data: { roadmap?: typeof roadmap | null }) => setRoadmap(data.roadmap ?? null));
+    fetch("/api/aptitude/summary", { cache: "no-store" })
+      .then(async (response) => {
+        if (!response.ok) return;
+        const data = (await response.json()) as NonNullable<typeof aptitudeSummary>;
+        setAptitudeSummary(data);
+      });
   }, []);
 
   const careerFit = summary?.careerFit ?? 0;
@@ -88,6 +100,38 @@ export default function Dashboard() {
         ))}
       </div>
 
+      <Panel className="mb-6 rounded-2xl p-5">
+        <div className="mb-4">
+          <div className="text-xs tracking-widest text-muted font-mono">APTITUDE PERFORMANCE</div>
+          <h2 className="mt-2 text-lg font-black text-ink">Assessment progress</h2>
+        </div>
+        <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
+          {[
+            {
+              label: "Latest score",
+              value: aptitudeSummary?.latestScore == null ? "—" : `${aptitudeSummary.latestScore}%`,
+            },
+            {
+              label: "Average score",
+              value: aptitudeSummary?.averageScore == null ? "—" : `${aptitudeSummary.averageScore}%`,
+            },
+            {
+              label: "Tests completed",
+              value: String(aptitudeSummary?.testsCompleted ?? 0),
+            },
+            {
+              label: "Accuracy",
+              value: aptitudeSummary?.accuracy == null ? "—" : `${aptitudeSummary.accuracy}%`,
+            },
+          ].map((item) => (
+            <div key={item.label}>
+              <div className="text-xs text-muted">{item.label}</div>
+              <div className="mt-1 text-xl font-black font-mono text-ink">{item.value}</div>
+            </div>
+          ))}
+        </div>
+      </Panel>
+
       <div className="grid lg:grid-cols-[0.9fr_1.1fr] gap-5 mb-8">
         <ProfileCard />
         <ReadinessPanel />
@@ -106,7 +150,7 @@ export default function Dashboard() {
           <ScoreBar label="Resume score" value={0} accent="#4F46E5" />
           <ScoreBar label="Skills" value={skillsScore} accent="#16A34A" />
           <ScoreBar label="Interview" value={71} accent="#F59E0B" />
-          <ScoreBar label="Aptitude" value={72} accent="#2563EB" />
+          <ScoreBar label="Aptitude" value={aptitudeSummary?.latestScore ?? 0} accent="#2563EB" />
           <ScoreBar label="Learning progress" value={roadmap?.progress ?? 0} accent="#4F46E5" />
         </div>
       </Panel>

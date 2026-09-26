@@ -74,6 +74,7 @@ model StudentProfile {
   notifications           Notification[]
   targetCareer            CareerRole?            @relation(fields: [targetCareerId], references: [id], onDelete: SetNull)
   careerAnalyses          CareerAnalysis[]
+  assessmentAttempts     AssessmentAttempt[]
 
   @@index([userId])
   @@index([targetDomain])
@@ -94,6 +95,7 @@ model Skill {
   skillGaps     SkillGap[]
   careerRoles   CareerRole[]          @relation("CareerRoleRequiredSkills")
   projects      Project[]             @relation("ProjectRequiredSkills")
+  questions     Question[]
 
   @@index([category])
 }
@@ -295,6 +297,119 @@ model ResumeAnalysis {
 // ============================================================
 // APTITUDE
 // ============================================================
+
+enum QuestionCategory {
+  QUANTITATIVE
+  LOGICAL_REASONING
+  VERBAL_ABILITY
+  DATA_INTERPRETATION
+  TECHNICAL
+}
+
+enum QuestionDifficulty {
+  EASY
+  MEDIUM
+  HARD
+}
+
+enum AssessmentStatus {
+  IN_PROGRESS
+  COMPLETED
+  EXPIRED
+}
+
+model Question {
+  id            String            @id @default(cuid())
+  question      String
+  category      QuestionCategory
+  difficulty    QuestionDifficulty
+  optionA       String
+  optionB       String
+  optionC       String
+  optionD       String
+  correctAnswer String            // A, B, C, or D
+  explanation   String?
+  skillId       String?
+  createdAt     DateTime          @default(now())
+  updatedAt     DateTime          @updatedAt
+
+  skill     Skill?               @relation(fields: [skillId], references: [id], onDelete: SetNull)
+  answers   AssessmentAnswer[]
+  assessments AssessmentQuestion[]
+
+  @@index([category])
+  @@index([difficulty])
+  @@index([skillId])
+}
+
+model Assessment {
+  id              String            @id @default(cuid())
+  title           String
+  category        QuestionCategory
+  difficulty      QuestionDifficulty
+  totalQuestions  Int
+  durationMinutes Int
+  createdAt       DateTime          @default(now())
+
+  attempts AssessmentAttempt[]
+  questions AssessmentQuestion[]
+
+  @@index([category])
+  @@index([difficulty])
+}
+
+model AssessmentQuestion {
+  assessmentId String
+  questionId   String
+  position     Int
+
+  assessment Assessment @relation(fields: [assessmentId], references: [id], onDelete: Cascade)
+  question   Question   @relation(fields: [questionId], references: [id], onDelete: Cascade)
+
+  @@id([assessmentId, questionId])
+  @@unique([assessmentId, position])
+  @@index([questionId])
+}
+
+model AssessmentAttempt {
+  id               String          @id @default(cuid())
+  assessmentId     String
+  studentProfileId String
+  startedAt        DateTime        @default(now())
+  completedAt      DateTime?
+  status           AssessmentStatus @default(IN_PROGRESS)
+  score            Int?            // 0-100
+  percentage       Float?          // 0-100
+  correctAnswers   Int?
+  incorrectAnswers Int?
+  unanswered       Int?
+  createdAt        DateTime        @default(now())
+
+  assessment     Assessment       @relation(fields: [assessmentId], references: [id], onDelete: Cascade)
+  studentProfile StudentProfile   @relation(fields: [studentProfileId], references: [id], onDelete: Cascade)
+  answers        AssessmentAnswer[]
+
+  @@index([assessmentId])
+  @@index([studentProfileId])
+  @@index([status])
+  @@index([createdAt])
+}
+
+model AssessmentAnswer {
+  id            String   @id @default(cuid())
+  attemptId     String
+  questionId    String
+  selectedAnswer String  // A, B, C, or D
+  isCorrect     Boolean
+  answeredAt    DateTime @default(now())
+
+  attempt  AssessmentAttempt @relation(fields: [attemptId], references: [id], onDelete: Cascade)
+  question Question          @relation(fields: [questionId], references: [id], onDelete: Cascade)
+
+  @@unique([attemptId, questionId])
+  @@index([attemptId])
+  @@index([questionId])
+}
 
 model AptitudeAttempt {
   id               String   @id @default(cuid())
