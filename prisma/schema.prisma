@@ -76,6 +76,9 @@ model StudentProfile {
   careerAnalyses          CareerAnalysis[]
   assessmentAttempts     AssessmentAttempt[]
   skillPerformances      SkillPerformance[]
+  githubConnection       GitHubConnection?
+  linkedinProfile        LinkedInProfile?
+  professionalEvidence    ProfessionalEvidence[]
 
   @@index([userId])
   @@index([targetDomain])
@@ -99,6 +102,9 @@ model Skill {
   questions     Question[]
   interviewQuestions InterviewQuestion[]
   skillPerformances SkillPerformance[]
+  githubSkillEvidence GitHubSkillEvidence[]
+  linkedinSkills LinkedInSkill[]
+  professionalEvidence ProfessionalEvidence[]
 
   @@index([category])
 }
@@ -614,6 +620,8 @@ model ReadinessScore {
   interviewScore   Int      // 0-100
   projectScore     Int      // 0-100
   roadmapProgress  Int      @default(0) // 0-100
+  githubScore      Int      @default(0) // 0-100
+  linkedinScore    Int      @default(0) // 0-100
   weakSkillCount   Int      @default(0)
   createdAt        DateTime @default(now())
 
@@ -707,4 +715,176 @@ model SkillPerformance {
   @@unique([studentProfileId, skillId])
   @@index([studentProfileId])
   @@index([skillId])
+}
+
+// ============================================================
+// GITHUB INTEGRATION (PHASE 4.9)
+// ============================================================
+
+model GitHubConnection {
+  id               String   @id @default(cuid())
+  studentProfileId String   @unique
+  username         String
+  accessToken      String   // Encrypted OAuth token
+  scope            String?
+  lastSyncedAt     DateTime?
+  isActive         Boolean  @default(true)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  studentProfile   StudentProfile    @relation(fields: [studentProfileId], references: [id], onDelete: Cascade)
+  repositories     GitHubRepository[]
+  skillEvidence    GitHubSkillEvidence[]
+
+  @@index([studentProfileId])
+  @@index([username])
+}
+
+model GitHubRepository {
+  id               String   @id @default(cuid())
+  connectionId     String
+  repositoryId     String   // GitHub repository ID
+  name             String
+  fullName         String
+  description      String?
+  url              String
+  primaryLanguage  String?
+  languages        Json?    // { language: bytes }
+  stars            Int      @default(0)
+  forks            Int      @default(0)
+  topics           String[] @default([])
+  isPublic         Boolean  @default(true)
+  hasReadme        Boolean  @default(false)
+  readmeLength     Int?
+  hasLicense       Boolean  @default(false)
+  createdAt        DateTime
+  updatedAt        DateTime
+  pushedAt         DateTime?
+  lastSyncedAt     DateTime @default(now())
+
+  connection       GitHubConnection @relation(fields: [connectionId], references: [id], onDelete: Cascade)
+
+  @@index([connectionId])
+  @@index([repositoryId])
+  @@index([primaryLanguage])
+}
+
+model GitHubSkillEvidence {
+  id               String   @id @default(cuid())
+  connectionId     String
+  skillId          String
+  repositoryIds    String[] // Array of repository IDs demonstrating this skill
+  confidence       String   // HIGH, MEDIUM, LOW
+  evidenceCount    Int      @default(0)
+  lastAnalyzedAt   DateTime @default(now())
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  connection       GitHubConnection @relation(fields: [connectionId], references: [id], onDelete: Cascade)
+  skill            Skill            @relation(fields: [skillId], references: [id], onDelete: Cascade)
+
+  @@unique([connectionId, skillId])
+  @@index([connectionId])
+  @@index([skillId])
+  @@index([confidence])
+}
+
+// ============================================================
+// LINKEDIN INTEGRATION (PHASE 4.9)
+// ============================================================
+
+model LinkedInProfile {
+  id               String   @id @default(cuid())
+  studentProfileId String   @unique
+  profileUrl       String?
+  name             String?
+  headline         String?
+  about            String?
+  location         String?
+  lastSyncedAt     DateTime?
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  studentProfile   StudentProfile    @relation(fields: [studentProfileId], references: [id], onDelete: Cascade)
+  skills           LinkedInSkill[]
+  experience       LinkedInExperience[]
+  education        LinkedInEducation[]
+
+  @@index([studentProfileId])
+}
+
+model LinkedInSkill {
+  id               String   @id @default(cuid())
+  profileId        String
+  skillId          String
+  proficiency      String?  // BEGINNER, INTERMEDIATE, ADVANCED, EXPERT
+  endorsements     Int      @default(0)
+  createdAt        DateTime @default(now())
+
+  profile          LinkedInProfile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  skill            Skill           @relation(fields: [skillId], references: [id], onDelete: Cascade)
+
+  @@unique([profileId, skillId])
+  @@index([profileId])
+  @@index([skillId])
+}
+
+model LinkedInExperience {
+  id               String   @id @default(cuid())
+  profileId        String
+  company          String
+  title            String
+  description      String?
+  location         String?
+  startDate        DateTime?
+  endDate          DateTime?
+  isCurrent        Boolean  @default(false)
+  createdAt        DateTime @default(now())
+
+  profile          LinkedInProfile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+
+  @@index([profileId])
+  @@index([company])
+}
+
+model LinkedInEducation {
+  id               String   @id @default(cuid())
+  profileId        String
+  institution      String
+  degree           String?
+  field            String?
+  startDate        DateTime?
+  endDate          DateTime?
+  createdAt        DateTime @default(now())
+
+  profile          LinkedInProfile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+
+  @@index([profileId])
+  @@index([institution])
+}
+
+// ============================================================
+// PROFESSIONAL EVIDENCE (PHASE 4.9)
+// ============================================================
+
+model ProfessionalEvidence {
+  id               String   @id @default(cuid())
+  studentProfileId String
+  skillId          String
+  source           String   // RESUME, GITHUB, LINKEDIN, PROJECT, APTITUDE, INTERVIEW
+  sourceReference  String?  // Reference ID (e.g., repositoryId, resumeId)
+  evidenceType     String   // DIRECT, INDIRECT, INFERRED
+  confidence       String   // HIGH, MEDIUM, LOW
+  metadata         Json?    // Additional evidence details
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  studentProfile   StudentProfile @relation(fields: [studentProfileId], references: [id], onDelete: Cascade)
+  skill            Skill          @relation(fields: [skillId], references: [id], onDelete: Cascade)
+
+  @@unique([studentProfileId, skillId, source, sourceReference])
+  @@index([studentProfileId])
+  @@index([skillId])
+  @@index([source])
+  @@index([confidence])
 }

@@ -9,7 +9,9 @@ import {
   BriefcaseBusiness,
   CheckCircle2,
   FileText,
+  Github,
   LineChart,
+  Linkedin,
   Mic,
   Target,
 } from "lucide-react";
@@ -30,8 +32,10 @@ const actions = [
 
 const quickLinks = [
   { href: "/dashboard/career", label: "CAREER MATCH", title: "Strong fit detected", icon: BriefcaseBusiness },
-{ href: "/dashboard/skills", label: "TOP GAP", title: "Review your saved skills", icon: Target },
+  { href: "/dashboard/skills", label: "TOP GAP", title: "Review your saved skills", icon: Target },
   { href: "/dashboard/interview", label: "INTERVIEW PREP", title: "Start your first mock round", icon: Mic },
+  { href: "/dashboard/github", label: "GITHUB", title: "Connect your portfolio", icon: Github },
+  { href: "/dashboard/linkedin", label: "LINKEDIN", title: "Import your profile", icon: Linkedin },
 ];
 
 type Readiness = {
@@ -44,6 +48,9 @@ type Readiness = {
     aptitude: { score: number; explanation: string };
     interview: { score: number; explanation: string };
     learning: { score: number; explanation: string };
+    projects: { score: number; explanation: string };
+    github: { score: number; explanation: string };
+    linkedin: { score: number; explanation: string };
   };
   recommendations: { id: string; title: string; detail: string; href: string }[];
 };
@@ -65,6 +72,10 @@ export default function Dashboard() {
     testsCompleted: number;
     accuracy: number | null;
   } | null>(null);
+  const [professionalConnections, setProfessionalConnections] = useState<{
+    github: boolean;
+    linkedin: boolean;
+  }>({ github: false, linkedin: false });
 
   useEffect(() => {
     getSession().then((session) => {
@@ -89,6 +100,13 @@ export default function Dashboard() {
         if (!response.ok) return;
         setReadiness((await response.json()) as Readiness);
       });
+    // Check professional connections
+    Promise.all([
+      fetch("/api/github/profile").then(res => ({ github: res.ok })).catch(() => ({ github: false })),
+      fetch("/api/linkedin/profile").then(res => ({ linkedin: res.ok })).catch(() => ({ linkedin: false })),
+    ]).then(([githubStatus, linkedinStatus]) => {
+      setProfessionalConnections({ github: githubStatus.github, linkedin: linkedinStatus.linkedin });
+    });
   }, []);
 
   const careerFit = summary?.careerFit ?? 0;
@@ -167,6 +185,65 @@ export default function Dashboard() {
         <ReadinessPanel readiness={readiness} />
       </div>
 
+      <Panel className="mb-6 rounded-2xl p-5">
+        <div className="mb-4">
+          <div className="text-xs tracking-widest text-muted font-mono">PROFESSIONAL PROFILE</div>
+          <h2 className="mt-2 text-lg font-black text-ink">Connect your professional evidence</h2>
+        </div>
+        <div className="grid gap-4 sm:grid-cols-2">
+          <div className={`rounded-xl border p-4 ${professionalConnections.github ? "border-green-200 bg-green-50" : "border-line bg-slate-50"}`}>
+            <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center gap-2">
+                <Github className={professionalConnections.github ? "text-green-600" : "text-muted"} size={20} />
+                <span className="font-semibold text-ink">GitHub</span>
+              </div>
+              {professionalConnections.github ? (
+                <CheckCircle2 className="text-green-600" size={18} />
+              ) : (
+                <span className="text-xs text-muted">Not connected</span>
+              )}
+            </div>
+            <p className="text-sm text-muted mb-3">
+              {professionalConnections.github 
+                ? "Your GitHub portfolio is connected and contributing to your readiness score." 
+                : "Connect your GitHub to showcase your technical projects and skills."}
+            </p>
+            <Link 
+              href="/dashboard/github" 
+              className="inline-flex items-center gap-2 text-sm font-semibold text-cyan hover:underline"
+            >
+              {professionalConnections.github ? "View GitHub Dashboard" : "Connect GitHub"}
+              <ArrowRight size={14} />
+            </Link>
+          </div>
+          <div className={`rounded-xl border p-4 ${professionalConnections.linkedin ? "border-green-200 bg-green-50" : "border-line bg-slate-50"}`}>
+            <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center gap-2">
+                <Linkedin className={professionalConnections.linkedin ? "text-green-600" : "text-muted"} size={20} />
+                <span className="font-semibold text-ink">LinkedIn</span>
+              </div>
+              {professionalConnections.linkedin ? (
+                <CheckCircle2 className="text-green-600" size={18} />
+              ) : (
+                <span className="text-xs text-muted">Not connected</span>
+              )}
+            </div>
+            <p className="text-sm text-muted mb-3">
+              {professionalConnections.linkedin 
+                ? "Your LinkedIn profile is imported and contributing to your readiness score." 
+                : "Import your LinkedIn profile to add professional experience and skills."}
+            </p>
+            <Link 
+              href="/dashboard/linkedin" 
+              className="inline-flex items-center gap-2 text-sm font-semibold text-cyan hover:underline"
+            >
+              {professionalConnections.linkedin ? "View LinkedIn Dashboard" : "Import LinkedIn"}
+              <ArrowRight size={14} />
+            </Link>
+          </div>
+        </div>
+      </Panel>
+
       <WeakSkillsPanel />
 
       <Panel className="p-6 mb-5 rounded-2xl">
@@ -184,6 +261,9 @@ export default function Dashboard() {
           <ScoreBar label="Interview" value={readiness?.metrics.interview.score ?? 0} accent="#F59E0B" />
           <ScoreBar label="Aptitude" value={readiness?.metrics.aptitude.score ?? aptitudeSummary?.latestScore ?? 0} accent="#2563EB" />
           <ScoreBar label="Learning progress" value={readiness?.metrics.learning.score ?? roadmap?.progress ?? 0} accent="#4F46E5" />
+          <ScoreBar label="Projects" value={readiness?.metrics.projects.score ?? 0} accent="#8B5CF6" />
+          <ScoreBar label="GitHub" value={readiness?.metrics.github.score ?? 0} accent="#6B7280" />
+          <ScoreBar label="LinkedIn" value={readiness?.metrics.linkedin.score ?? 0} accent="#0077B5" />
         </div>
       </Panel>
 
@@ -214,7 +294,7 @@ export default function Dashboard() {
         </div>
       </Panel>
 
-      <div className="grid sm:grid-cols-3 gap-5 mb-8">
+      <div className="grid sm:grid-cols-3 lg:grid-cols-5 gap-5 mb-8">
         {quickLinks.map((item) => {
           const Icon = item.icon;
           return (

@@ -3,13 +3,15 @@ import "server-only";
 import { prisma } from "@/lib/prisma";
 
 const READINESS_WEIGHTS = {
-  career: 15,
-  skills: 20,
-  resume: 15,
-  aptitude: 15,
-  interview: 15,
-  learning: 15,
-  projects: 5,
+  career: 12,
+  skills: 18,
+  resume: 12,
+  aptitude: 12,
+  interview: 12,
+  learning: 12,
+  projects: 8,
+  github: 7,
+  linkedin: 7,
 } as const;
 
 type MetricKey = keyof typeof READINESS_WEIGHTS;
@@ -50,7 +52,7 @@ function startOfToday() {
 }
 
 export async function calculateReadiness(studentProfileId: string): Promise<ReadinessProfile> {
-  const [careerAnalysis, resume, assessment, legacyAptitudeAttempt, skillPerformances, roadmap, interviewSessions, projectRecommendations] =
+  const [careerAnalysis, resume, assessment, legacyAptitudeAttempt, skillPerformances, roadmap, interviewSessions, projectRecommendations, githubConnection, linkedinProfile, professionalEvidence] =
     await Promise.all([
       prisma.careerAnalysis.findFirst({
         where: { studentProfileId },
@@ -88,6 +90,25 @@ export async function calculateReadiness(studentProfileId: string): Promise<Read
       prisma.projectRecommendation.findMany({
         where: { studentProfileId },
         select: { status: true, skillsDemonstrated: true },
+      }),
+      prisma.gitHubConnection.findUnique({
+        where: { studentProfileId },
+        include: {
+          repositories: true,
+          skillEvidence: true,
+        },
+      }),
+      prisma.linkedInProfile.findUnique({
+        where: { studentProfileId },
+        include: {
+          skills: true,
+          experience: true,
+          education: true,
+        },
+      }),
+      prisma.professionalEvidence.findMany({
+        where: { studentProfileId },
+        select: { confidence: true, source: true },
       }),
     ]);
 
@@ -160,7 +181,42 @@ export async function calculateReadiness(studentProfileId: string): Promise<Read
       }
     : unavailable("Generate project recommendations to track portfolio evidence.");
 
-  const metrics = { career, skills, resume: resumeMetric, aptitude, interview, learning, projects };
+  // GitHub evidence
+  const githubScore = githubConnection
+    ? githubConnection.repositories.length > 0
+      ? clampScore(
+          (githubConnection.repositories.filter(r => r.hasReadme).length / githubConnection.repositories.length) * 50 +
+          (githubConnection.skillEvidence.length / Math.max(1, githubConnection.repositories.length)) * 50
+        )
+      : 50
+    : null;
+  const github = githubScore !== null
+    ? {
+        score: githubScore,
+        available: true,
+        explanation: githubConnection.repositories.length > 0
+          ? `${githubConnection.repositories.length} repositories with ${githubConnection.skillEvidence.length} detected skills.`
+          : "GitHub connected but no repositories found.",
+      }
+    : unavailable("Connect GitHub to provide technical portfolio evidence.");
+
+  // LinkedIn evidence
+  const linkedinScore = linkedinProfile
+    ? clampScore(
+        (linkedinProfile.skills.length > 0 ? 40 : 0) +
+        (linkedinProfile.experience.length > 0 ? 30 : 0) +
+        (linkedinProfile.education.length > 0 ? 30 : 0)
+      )
+    : null;
+  const linkedin = linkedinScore !== null
+    ? {
+        score: linkedinScore,
+        available: true,
+        explanation: `${linkedinProfile.skills.length} skills, ${linkedinProfile.experience.length} experience entries, ${linkedinProfile.education.length} education entries.`,
+      }
+    : unavailable("Import LinkedIn profile to provide professional evidence.");
+
+  const metrics = { career, skills, resume: resumeMetric, aptitude, interview, learning, projects, github, linkedin };
   const overallScore = clampScore(
     (Object.keys(READINESS_WEIGHTS) as MetricKey[]).reduce(
       (total, key) => total + metrics[key].score * (READINESS_WEIGHTS[key] / 100),
@@ -188,6 +244,12 @@ export async function calculateReadiness(studentProfileId: string): Promise<Read
   if (careerAnalysis && careerAnalysis.missingSkills.length > 0) {
     recommendations.push({ id: "career", title: "Address target-role skill gaps", detail: `${careerAnalysis.missingSkills.length} skills are still missing for ${careerAnalysis.careerRole.title}.`, href: "/dashboard/career" });
   }
+  if (!github.available || github.score < 60) {
+    recommendations.push({ id: "github", title: "Improve GitHub portfolio", detail: github.available ? `GitHub evidence score is ${github.score}%; add more repositories with READMEs.` : github.explanation, href: "/dashboard/github" });
+  }
+  if (!linkedin.available || linkedin.score < 60) {
+    recommendations.push({ id: "linkedin", title: "Complete LinkedIn profile", detail: linkedin.available ? `LinkedIn profile score is ${linkedin.score}%; add skills and experience.` : linkedin.explanation, href: "/dashboard/linkedin" });
+  }
 
   return { overallScore, metrics, weakSkillCount, recommendations: recommendations.slice(0, 5), computedAt: new Date().toISOString() };
 }
@@ -211,6 +273,8 @@ export async function storeDailyReadinessSnapshot(studentProfileId: string, read
       interviewScore: readiness.metrics.interview.score,
       projectScore: readiness.metrics.projects.score,
       roadmapProgress: readiness.metrics.learning.score,
+      githubScore: readiness.metrics.github.score,
+      linkedinScore: readiness.metrics.linkedin.score,
       weakSkillCount: readiness.weakSkillCount,
     },
   });
