@@ -18,8 +18,11 @@ export async function GET(req: Request, { params }: { params: { id: string } }) 
       }
     });
 
-    if (!session || session.studentProfileId !== user.studentProfileId) {
-      return NextResponse.json({ error: "Session not found or forbidden" }, { status: 404 });
+    if (!session) {
+      return NextResponse.json({ error: "Session not found" }, { status: 404 });
+    }
+    if (session.studentProfileId !== user.studentProfileId) {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
     return NextResponse.json({ success: true, session });
