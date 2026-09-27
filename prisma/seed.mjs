@@ -28,6 +28,109 @@ const aptitudeSkills = {
   "algorithms": "CAREER",
 };
 
+const projects = [
+  {
+    id: "project-data-analyst-sales-dashboard",
+    title: "Sales Performance Dashboard",
+    career: "Data Analyst",
+    difficulty: "MEDIUM",
+    technologies: ["Python", "SQL", "Power BI"],
+    skills: ["python", "sql", "statistics", "power bi"],
+    estimatedDuration: 18,
+    description: "Transform a raw sales dataset into a documented dashboard with business questions, SQL queries, and clear visual findings.",
+  },
+  {
+    id: "project-data-scientist-churn-model",
+    title: "Customer Churn Prediction",
+    career: "Data Scientist",
+    difficulty: "HARD",
+    technologies: ["Python", "Pandas", "Scikit-learn"],
+    skills: ["python", "statistics", "machine learning", "pandas", "scikit-learn"],
+    estimatedDuration: 28,
+    description: "Build and evaluate a churn classifier with feature analysis, reproducible experiments, and a concise model report.",
+  },
+  {
+    id: "project-data-engineer-etl-pipeline",
+    title: "Incremental ETL Pipeline",
+    career: "Data Engineer",
+    difficulty: "HARD",
+    technologies: ["Python", "PostgreSQL", "Docker"],
+    skills: ["python", "sql", "etl", "postgresql"],
+    estimatedDuration: 26,
+    description: "Create a containerized ingestion pipeline that validates source data, loads PostgreSQL, and records run outcomes.",
+  },
+  {
+    id: "project-full-stack-job-tracker",
+    title: "Job Application Tracker",
+    career: "Full Stack Developer",
+    difficulty: "MEDIUM",
+    technologies: ["React", "Node.js", "PostgreSQL"],
+    skills: ["javascript", "react", "node.js", "sql"],
+    estimatedDuration: 24,
+    description: "Build a full-stack job tracker with authenticated CRUD workflows, accessible forms, and persistent status updates.",
+  },
+  {
+    id: "project-backend-api-platform",
+    title: "Secure REST API Platform",
+    career: "Backend Developer",
+    difficulty: "HARD",
+    technologies: ["Node.js", "PostgreSQL", "Docker"],
+    skills: ["node.js", "apis", "sql", "postgresql"],
+    estimatedDuration: 24,
+    description: "Design a secure API with resource ownership checks, validation, documented endpoints, and integration tests.",
+  },
+  {
+    id: "project-frontend-accessible-dashboard",
+    title: "Accessible Analytics Dashboard",
+    career: "Frontend Developer",
+    difficulty: "MEDIUM",
+    technologies: ["React", "JavaScript", "CSS"],
+    skills: ["html", "css", "javascript", "react"],
+    estimatedDuration: 18,
+    description: "Create a responsive dashboard that presents meaningful analytics with keyboard-friendly interactions and loading states.",
+  },
+  {
+    id: "project-ml-engineer-model-service",
+    title: "Model Inference Service",
+    career: "ML Engineer",
+    difficulty: "HARD",
+    technologies: ["Python", "TensorFlow", "Docker"],
+    skills: ["python", "machine learning", "tensorflow"],
+    estimatedDuration: 30,
+    description: "Package a trained model behind a documented inference service with input validation and repeatable deployment steps.",
+  },
+  {
+    id: "project-cloud-engineer-deployment",
+    title: "Cloud Deployment Blueprint",
+    career: "Cloud Engineer",
+    difficulty: "MEDIUM",
+    technologies: ["Docker", "Linux", "Cloud"],
+    skills: ["linux", "cloud", "networking", "docker"],
+    estimatedDuration: 20,
+    description: "Deploy a containerized service with environment configuration, health checks, and a clear infrastructure diagram.",
+  },
+  {
+    id: "project-devops-ci-pipeline",
+    title: "Continuous Delivery Pipeline",
+    career: "DevOps Engineer",
+    difficulty: "HARD",
+    technologies: ["Docker", "GitHub Actions", "Cloud"],
+    skills: ["linux", "docker", "ci/cd", "cloud"],
+    estimatedDuration: 24,
+    description: "Automate test, build, and deployment stages for a containerized application with rollback-aware documentation.",
+  },
+  {
+    id: "project-cybersecurity-security-audit",
+    title: "Web Security Audit Lab",
+    career: "Cybersecurity Analyst",
+    difficulty: "MEDIUM",
+    technologies: ["Linux", "Networking", "OWASP"],
+    skills: ["networking", "linux", "security"],
+    estimatedDuration: 16,
+    description: "Audit a deliberately vulnerable sample application and document findings, mitigations, and verification steps.",
+  },
+];
+
 const questions = [
   // QUANTITATIVE (5 questions)
   {
@@ -428,7 +531,47 @@ async function main() {
     });
   }
 
+  // Seed a stable project catalog connected to career roles and reusable skills.
+  for (const project of projects) {
+    const career = await prisma.careerRole.findFirst({ where: { title: project.career } });
+    const projectSkills = [];
+    for (const skillName of project.skills) {
+      projectSkills.push(await prisma.skill.upsert({
+        where: { name: skillName.toLowerCase() },
+        create: { name: skillName.toLowerCase(), category: "CAREER" },
+        update: {},
+      }));
+    }
+    await prisma.project.upsert({
+      where: { id: project.id },
+      create: {
+        id: project.id,
+        title: project.title,
+        description: project.description,
+        difficulty: project.difficulty,
+        domain: career?.domain ?? "Software Engineering",
+        technologies: project.technologies,
+        requiredSkills: projectSkills.map((skill) => skill.id),
+        estimatedDuration: project.estimatedDuration,
+        careerRoleId: career?.id ?? null,
+        skillRelations: { connect: projectSkills.map((skill) => ({ id: skill.id })) },
+      },
+      update: {
+        title: project.title,
+        description: project.description,
+        difficulty: project.difficulty,
+        domain: career?.domain ?? "Software Engineering",
+        technologies: project.technologies,
+        requiredSkills: projectSkills.map((skill) => skill.id),
+        estimatedDuration: project.estimatedDuration,
+        careerRoleId: career?.id ?? null,
+        skillRelations: { set: projectSkills.map((skill) => ({ id: skill.id })) },
+      },
+    });
+  }
+
   console.log("Seeded questions:", questions.length, "across", Object.keys(aptitudeSkills).length, "skills");
+  console.log("Seeded projects:", projects.length);
 }
 
 main()

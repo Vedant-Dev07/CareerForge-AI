@@ -140,6 +140,7 @@ model CareerRole {
   targetProfiles        StudentProfile[]
   analyses              CareerAnalysis[]
   resumes               Resume[]
+  recommendedProjects   Project[]                  @relation("ProjectTargetCareer")
   interviewQuestions    InterviewQuestion[]
 
   @@index([domain])
@@ -554,6 +555,7 @@ model LegacyInterviewEvaluation {
 
 model Project {
   id                String   @id @default(cuid())
+  careerRoleId      String?
   title             String
   description       String?
   difficulty        String   // EASY, MEDIUM, HARD
@@ -566,9 +568,11 @@ model Project {
 
   recommendations ProjectRecommendation[]
   skillRelations  Skill[]               @relation("ProjectRequiredSkills")
+  careerRole      CareerRole?           @relation("ProjectTargetCareer", fields: [careerRoleId], references: [id], onDelete: SetNull)
 
   @@index([domain])
   @@index([difficulty])
+  @@index([careerRoleId])
 }
 
 model ProjectRecommendation {
@@ -577,6 +581,13 @@ model ProjectRecommendation {
   projectId        String
   relevanceScore   Int      // 0-100
   reason           String?
+  status           String   @default("RECOMMENDED") // RECOMMENDED, IN_PROGRESS, COMPLETED
+  repositoryUrl    String?
+  demoUrl          String?
+  summary          String?
+  skillsDemonstrated String[] @default([])
+  startedAt        DateTime?
+  completedAt      DateTime?
   createdAt        DateTime @default(now())
 
   studentProfile StudentProfile @relation(fields: [studentProfileId], references: [id], onDelete: Cascade)
@@ -585,6 +596,7 @@ model ProjectRecommendation {
   @@unique([studentProfileId, projectId])
   @@index([studentProfileId])
   @@index([projectId])
+  @@index([status])
 }
 
 // ============================================================

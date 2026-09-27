@@ -8,7 +8,8 @@ const READINESS_WEIGHTS = {
   resume: 15,
   aptitude: 15,
   interview: 15,
-  learning: 20,
+  learning: 15,
+  projects: 5,
 } as const;
 
 type MetricKey = keyof typeof READINESS_WEIGHTS;
@@ -49,7 +50,7 @@ function startOfToday() {
 }
 
 export async function calculateReadiness(studentProfileId: string): Promise<ReadinessProfile> {
-  const [careerAnalysis, resume, assessment, legacyAptitudeAttempt, skillPerformances, roadmap, interviewSessions] =
+  const [careerAnalysis, resume, assessment, legacyAptitudeAttempt, skillPerformances, roadmap, interviewSessions, projectRecommendations] =
     await Promise.all([
       prisma.careerAnalysis.findFirst({
         where: { studentProfileId },
@@ -83,6 +84,10 @@ export async function calculateReadiness(studentProfileId: string): Promise<Read
       prisma.interviewSession.findMany({
         where: { studentProfileId, status: "COMPLETED", score: { not: null } },
         select: { score: true },
+      }),
+      prisma.projectRecommendation.findMany({
+        where: { studentProfileId },
+        select: { status: true, skillsDemonstrated: true },
       }),
     ]);
 
@@ -146,7 +151,16 @@ export async function calculateReadiness(studentProfileId: string): Promise<Read
       }
     : unavailable("Complete a mock interview to measure interview performance.");
 
-  const metrics = { career, skills, resume: resumeMetric, aptitude, interview, learning };
+  const completedProjects = projectRecommendations.filter((recommendation) => recommendation.status === "COMPLETED");
+  const projects = projectRecommendations.length
+    ? {
+        score: clampScore((completedProjects.length / projectRecommendations.length) * 100),
+        available: true,
+        explanation: `${completedProjects.length} of ${projectRecommendations.length} recommended projects completed as portfolio evidence.`,
+      }
+    : unavailable("Generate project recommendations to track portfolio evidence.");
+
+  const metrics = { career, skills, resume: resumeMetric, aptitude, interview, learning, projects };
   const overallScore = clampScore(
     (Object.keys(READINESS_WEIGHTS) as MetricKey[]).reduce(
       (total, key) => total + metrics[key].score * (READINESS_WEIGHTS[key] / 100),
@@ -195,7 +209,7 @@ export async function storeDailyReadinessSnapshot(studentProfileId: string, read
       resumeScore: readiness.metrics.resume.score,
       aptitudeScore: readiness.metrics.aptitude.score,
       interviewScore: readiness.metrics.interview.score,
-      projectScore: readiness.metrics.learning.score,
+      projectScore: readiness.metrics.projects.score,
       roadmapProgress: readiness.metrics.learning.score,
       weakSkillCount: readiness.weakSkillCount,
     },

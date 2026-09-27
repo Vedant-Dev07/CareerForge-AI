@@ -17,6 +17,7 @@ export async function GET() {
       aptitudeScore: readiness.metrics.aptitude.score,
       interviewScore: readiness.metrics.interview.score,
       roadmapProgress: readiness.metrics.learning.score,
+      projectScore: readiness.metrics.projects.score,
       skillScore: readiness.metrics.skills.score,
       weakSkillCount: readiness.weakSkillCount,
       recommendations: readiness.recommendations,
