@@ -647,6 +647,7 @@ model MentorMessage {
   conversationId String
   role           String   // USER, ASSISTANT
   content        String
+  actions        Json?
   createdAt      DateTime @default(now())
 
   conversation MentorConversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
