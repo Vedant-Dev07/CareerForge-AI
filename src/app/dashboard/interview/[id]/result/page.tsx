@@ -78,7 +78,7 @@ export default function InterviewResult({ params }: { params: { id: string } }) 
         <div className="space-y-6">
           {result.answers.map((ans: any, idx: number) => {
             const ev = ans.evaluation;
-            const qScore = ev ? (ev.score * 10).toFixed(0) : 0;
+            const qScore = ev ? ev.score.toFixed(0) : 0;
             return (
               <div key={ans.id} className="border border-line rounded-xl p-5 bg-slate-50/50">
                 <div className="flex items-start justify-between mb-3">
@@ -99,7 +99,7 @@ export default function InterviewResult({ params }: { params: { id: string } }) 
                 {ev && (
                   <div className="bg-white p-4 rounded-xl border border-line">
                     <div className="text-xs text-muted mb-2 font-semibold tracking-wide flex items-center gap-2">
-                      AI FEEDBACK {ev.score >= 7 ? <CheckCircle2 size={14} className="text-green-500" /> : <XCircle size={14} className="text-red-500" />}
+                    AI FEEDBACK {ev.score >= 70 ? <CheckCircle2 size={14} className="text-green-500" /> : <XCircle size={14} className="text-red-500" />}
                     </div>
                     <p className="text-sm text-ink mb-4">{ev.feedback}</p>
                     

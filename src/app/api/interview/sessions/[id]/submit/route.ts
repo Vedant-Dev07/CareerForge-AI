@@ -55,14 +55,20 @@ export async function POST(req: Request, { params }: { params: { id: string } })
         totalClarity += ev.clarity;
         totalProfessionalism += ev.professionalism;
 
-        const category = ans.interviewQuestion?.category || "TECHNICAL"; 
+        const category =
+          ans.interviewQuestion?.category ||
+          (session.interviewType === "HR"
+            ? "HR"
+            : session.interviewType === "RESUME_BASED"
+              ? "RESUME_BASED"
+              : "TECHNICAL");
         
         if (category === "TECHNICAL") {
           categoryStats.TECHNICAL.total += ev.score;
           categoryStats.TECHNICAL.count++;
           
           // Flag weak skills for Roadmap Integration
-          if (ev.score < 5 && ans.interviewQuestion?.skillId) {
+          if (ev.score < 50 && ans.interviewQuestion?.skillId) {
             weakSkillsToFlag.push(ans.interviewQuestion.skillId);
           }
         } else if (category === "HR" || category === "BEHAVIORAL") {
@@ -76,10 +82,10 @@ export async function POST(req: Request, { params }: { params: { id: string } })
     }
 
     // Convert out of 10 to out of 100
-    const finalScore = evalCount > 0 ? (totalScore / evalCount) * 10 : 0;
-    const technicalScore = categoryStats.TECHNICAL.count > 0 ? (categoryStats.TECHNICAL.total / categoryStats.TECHNICAL.count) * 10 : null;
-    const hrScore = categoryStats.HR.count > 0 ? (categoryStats.HR.total / categoryStats.HR.count) * 10 : null;
-    const resumeScore = categoryStats.RESUME_BASED.count > 0 ? (categoryStats.RESUME_BASED.total / categoryStats.RESUME_BASED.count) * 10 : null;
+    const finalScore = evalCount > 0 ? totalScore / evalCount : 0;
+    const technicalScore = categoryStats.TECHNICAL.count > 0 ? categoryStats.TECHNICAL.total / categoryStats.TECHNICAL.count : null;
+    const hrScore = categoryStats.HR.count > 0 ? categoryStats.HR.total / categoryStats.HR.count : null;
+    const resumeScore = categoryStats.RESUME_BASED.count > 0 ? categoryStats.RESUME_BASED.total / categoryStats.RESUME_BASED.count : null;
     
     const commsScore = evalCount > 0 ? ((totalClarity + totalProfessionalism) / (evalCount * 2)) * 10 : null;
 

@@ -3,48 +3,8 @@
 import { useState, useEffect, useCallback } from "react";
 import DashboardHeader from "@/components/dashboard/header";
 import Panel from "@/components/ui/panel";
-import { Upload, FileText, CheckCircle2, AlertCircle, RefreshCw, PlusCircle, Lightbulb, Edit3, Settings, Award } from "lucide-react";
-import {
-  RadarChart,
-  PolarGrid,
-  PolarAngleAxis,
-  PolarRadiusAxis,
-  Radar,
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  ResponsiveContainer
-} from 'recharts';
-
-const CircularProgressSmall = ({ value, title, color = "text-cyan" }: { value: number; title: string, color?: string }) => {
-  const radius = 32;
-  const circumference = 2 * Math.PI * radius;
-  const offset = circumference - (value / 100) * circumference;
-  
-  return (
-    <div className="flex flex-col items-center justify-center p-4">
-      <h3 className="text-sm font-semibold text-ink mb-4">{title}</h3>
-      <div className="relative flex items-center justify-center">
-        <svg className="w-20 h-20 transform -rotate-90">
-          <circle className="text-line" strokeWidth="6" stroke="currentColor" fill="transparent" r={radius} cx="40" cy="40" />
-          <circle
-            className={`${color} transition-all duration-1000 ease-in-out`}
-            strokeWidth="6"
-            strokeDasharray={circumference}
-            strokeDashoffset={offset}
-            strokeLinecap="round"
-            stroke="currentColor"
-            fill="transparent"
-            r={radius} cx="40" cy="40"
-          />
-        </svg>
-        <span className="absolute text-lg font-black text-ink">{value}%</span>
-      </div>
-    </div>
-  );
-};
+import { Upload, FileText, CheckCircle2, AlertCircle, RefreshCw, PlusCircle } from "lucide-react";
+import Link from "next/link";
 
 export default function ResumeAnalyzerPage() {
   const [resumes, setResumes] = useState<any[]>([]);
@@ -119,10 +79,12 @@ export default function ResumeAnalyzerPage() {
     if (!activeResume) return;
     setIsAnalyzing(true);
     try {
-      const res = await fetch(`/api/resume/${activeResume.id}/analyze`, { method: "POST" });
+      const res = await fetch(`/api/resume/${activeResume.id}/analyze`, {
+        method: "POST",
+      });
       if (res.ok) {
         await fetchResumeDetails(activeResume.id);
-        await fetchResumes();
+        await fetchResumes(); // refresh list
       }
     } catch (e) {
       console.error(e);
@@ -131,139 +93,224 @@ export default function ResumeAnalyzerPage() {
     }
   };
 
-  const strengthData = [
-    { subject: 'Skills', A: 90, fullMark: 100 },
-    { subject: 'Experience', A: 85, fullMark: 100 },
-    { subject: 'Keywords', A: 70, fullMark: 100 },
-    { subject: 'Education', A: 95, fullMark: 100 },
-  ];
-
-  const weaknessData = [
-    { name: 'Measurable Achievements', value: 20 },
-    { name: 'Project Descriptions', value: 45 },
-    { name: 'Certifications', value: 30 },
-  ];
+  const deleteResume = async (id: string) => {
+    try {
+      const res = await fetch(`/api/resume/${id}`, {
+        method: "DELETE",
+      });
+      if (res.ok) {
+        setActiveResume(null);
+        fetchResumes();
+      }
+    } catch (e) {
+      console.error(e);
+    }
+  };
 
   return (
-    <>
-      <DashboardHeader title="Resume Analyzer" subtitle="Drop your resume for AI-driven feedback and ATS scoring" />
+    <main className="min-h-screen bg-neutral-50 pb-20">
+      <DashboardHeader title="Resume Analyzer" />
 
-      {/* Upload Zone */}
-      <Panel className="mb-6 rounded-2xl overflow-hidden relative group border-2 border-dashed border-cyan/30 hover:border-cyan transition-colors bg-gradient-to-r from-cyan/5 to-blue-500/5">
-        <label className="flex flex-col items-center justify-center py-10 cursor-pointer w-full h-full">
-          <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center shadow-sm text-cyan mb-4 group-hover:scale-110 transition-transform">
-            <Upload size={28} />
-          </div>
-          <h3 className="text-lg font-bold text-ink mb-1">Drag & Drop your resume (PDF)</h3>
-          <p className="text-sm text-muted mb-4">Or click to browse files</p>
-          <div className="bg-cyan text-white px-6 py-2 rounded-lg text-sm font-semibold hover:bg-cyan-600 transition-colors">
-            {isUploading ? "Uploading..." : "Browse Files"}
-          </div>
-          <input type="file" className="hidden" accept=".pdf,.docx" onChange={handleFileUpload} disabled={isUploading} />
-        </label>
-        {uploadError && <p className="absolute bottom-4 left-0 right-0 text-xs text-red-500 text-center font-semibold">{uploadError}</p>}
-      </Panel>
-
-      <div className="grid lg:grid-cols-[1fr_380px] gap-6 mb-8">
-        
-        {/* Left Column: Analytics */}
-        <div className="space-y-6">
-          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            <Panel className="rounded-2xl flex items-center justify-center">
-              <CircularProgressSmall title="Resume Score" value={activeResume?.analysis?.atsScore ?? 89} color="text-blue-600" />
-            </Panel>
-            <Panel className="rounded-2xl flex items-center justify-center">
-              <CircularProgressSmall title="ATS Score" value={activeResume?.analysis?.atsScore ? activeResume.analysis.atsScore - 4 : 85} color="text-cyan-500" />
-            </Panel>
-            <Panel className="rounded-2xl p-4 sm:col-span-2 flex flex-col">
-              <h3 className="text-sm font-semibold text-ink text-center mb-2">Strengths Radar Chart</h3>
-              <div className="flex-1 w-full min-h-[120px]">
-                <ResponsiveContainer width="100%" height="100%">
-                  <RadarChart cx="50%" cy="50%" outerRadius="60%" data={strengthData}>
-                    <PolarGrid stroke="#e5e7eb" />
-                    <PolarAngleAxis dataKey="subject" tick={{ fill: '#6b7280', fontSize: 10 }} />
-                    <Radar name="Resume" dataKey="A" stroke="#06b6d4" strokeWidth={2} fill="#06b6d4" fillOpacity={0.3} />
-                  </RadarChart>
-                </ResponsiveContainer>
+      <div className="max-w-5xl mx-auto px-6 py-8">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          
+          <div className="lg:col-span-1 space-y-6">
+            <Panel title="Upload Resume">
+              <div className="flex flex-col items-center justify-center p-8 border-2 border-dashed border-neutral-300 rounded-lg bg-neutral-50 hover:bg-neutral-100 transition">
+                <Upload className="h-8 w-8 text-neutral-400 mb-4" />
+                <p className="text-sm text-neutral-600 text-center mb-4">
+                  Drag & Drop Resume<br />
+                  <span className="text-xs">Supported: PDF / DOCX</span>
+                </p>
+                <label className="cursor-pointer bg-neutral-900 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-neutral-800 transition">
+                  {isUploading ? "Uploading..." : "Select File"}
+                  <input type="file" className="hidden" accept=".pdf,.docx" onChange={handleFileUpload} disabled={isUploading} />
+                </label>
+                {uploadError && <p className="text-xs text-red-500 mt-3 text-center">{uploadError}</p>}
               </div>
             </Panel>
-          </div>
 
-          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            <Panel className="rounded-2xl flex items-center justify-center">
-              <CircularProgressSmall title="Grammar Score" value={95} color="text-purple-500" />
-            </Panel>
-            <Panel className="rounded-2xl flex items-center justify-center">
-              <CircularProgressSmall title="Formatting Score" value={92} color="text-blue-500" />
-            </Panel>
-            <Panel className="rounded-2xl p-4 sm:col-span-2 flex flex-col">
-              <h3 className="text-sm font-semibold text-ink text-center mb-2">Weaknesses Bar Chart</h3>
-              <div className="flex-1 w-full min-h-[120px]">
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={weaknessData} layout="vertical" margin={{ top: 0, right: 20, left: 0, bottom: 0 }}>
-                    <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#e5e7eb" opacity={0.5} />
-                    <XAxis type="number" hide />
-                    <YAxis dataKey="name" type="category" axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: '#6b7280' }} width={120} />
-                    <Bar dataKey="value" fill="#3b82f6" radius={[0, 4, 4, 0]} barSize={16} />
-                  </BarChart>
-                </ResponsiveContainer>
-              </div>
-            </Panel>
-          </div>
-          
-          {activeResume && (
-            <div className="flex justify-end gap-3">
-              <button onClick={() => analyzeResume()} disabled={isAnalyzing} className="flex items-center gap-2 bg-cyan text-white px-5 py-2.5 rounded-xl text-sm font-bold hover:bg-cyan-600 transition-colors">
-                {isAnalyzing ? <RefreshCw className="h-4 w-4 animate-spin" /> : <Lightbulb className="h-4 w-4" />}
-                Re-Analyze Resume
-              </button>
-            </div>
-          )}
-        </div>
-
-        {/* Right Column: AI Suggestions & Markup */}
-        <div className="space-y-6 flex flex-col">
-          
-          <Panel className="rounded-2xl p-5 flex flex-col">
-            <h3 className="text-sm font-semibold text-ink mb-4 flex items-center gap-2"><Lightbulb size={16} className="text-amber-500" /> AI Suggestions</h3>
-            <div className="space-y-3 flex-1">
-              {[
-                { title: "Add measurable achievements", link: "View Details", icon: Award },
-                { title: "Improve project descriptions", link: "View Details", icon: Edit3 },
-                { title: "Add technical skills", link: "View Details", icon: Settings },
-                { title: "Include certifications", link: "View Details", icon: Award },
-              ].map((item, i) => (
-                <div key={i} className="flex items-center justify-between p-3 bg-slate-50 border border-line rounded-xl hover:border-cyan/30 transition-colors">
-                  <div className="flex items-center gap-3">
-                    <item.icon size={16} className="text-slate-400" />
-                    <span className="text-sm text-ink font-medium">{item.title}</span>
-                  </div>
-                  <a href="#" className="text-xs text-cyan font-semibold hover:underline">{item.link}</a>
+            <Panel title="Your Resumes">
+              {resumes.length === 0 ? (
+                <p className="text-sm text-neutral-500 py-4 text-center">No resumes uploaded yet.</p>
+              ) : (
+                <div className="space-y-3">
+                  {resumes.map(r => (
+                    <div key={r.id} 
+                         className={`p-3 rounded-md border flex items-center justify-between cursor-pointer ${activeResume?.id === r.id ? 'border-neutral-900 bg-neutral-100' : 'border-neutral-200 hover:bg-neutral-50'}`}
+                         onClick={() => fetchResumeDetails(r.id)}>
+                      <div className="flex items-center gap-3 overflow-hidden">
+                        <FileText className="h-5 w-5 text-neutral-500 shrink-0" />
+                        <div className="truncate">
+                          <p className="text-sm font-medium truncate">{r.fileName}</p>
+                          <p className="text-xs text-neutral-500">{new Date(r.createdAt).toLocaleDateString()}</p>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
                 </div>
-              ))}
-            </div>
-          </Panel>
+              )}
+            </Panel>
+          </div>
 
-          <Panel className="rounded-2xl p-5 flex-1 flex flex-col">
-             <h3 className="text-sm font-semibold text-ink mb-4">Text Analysis</h3>
-             <div className="bg-slate-50 border border-line rounded-xl p-4 text-sm leading-relaxed font-medium text-ink overflow-y-auto max-h-[300px]">
-                <span className="bg-green-100 text-green-800 px-1 rounded">Spearheaded project</span> &rarr; speeding, impactful phrases into purpose and key phrases.<br/><br/>
-                <span className="bg-green-100 text-green-800 px-1 rounded">Achieved 20% growth</span> &rarr; resume was satitte for protecting phas and <span className="bg-green-100 text-green-800 px-1 rounded">Achieved critiied project phrases and exoratives.</span><br/><br/>
-                <span className="bg-yellow-100 text-yellow-800 px-1 rounded">Managed team &rarr; How many people?</span> recerine? than the store. Managed team &rarr; <span className="bg-yellow-100 text-yellow-800 px-1 rounded">How many people? What was the outcome?</span><br/><br/>
-                <span className="bg-red-100 text-red-800 px-1 rounded">Spelling mistake</span><br/>
-                <span className="bg-red-100 text-red-800 px-1 rounded">Formatting inconsistent &rarr; epsed yen.us and</span><br/>
-                <span className="bg-red-100 text-red-800 px-1 rounded">Formatting inconsistent &rarr; onelting cofecabling enerations.</span>
-             </div>
-             <div className="flex items-center gap-4 mt-4 text-xs font-semibold text-muted justify-center">
-                <span className="flex items-center gap-1.5"><div className="w-2.5 h-2.5 bg-green-400 rounded-sm" /> Strong phrase</span>
-                <span className="flex items-center gap-1.5"><div className="w-2.5 h-2.5 bg-yellow-400 rounded-sm" /> Needs detail</span>
-                <span className="flex items-center gap-1.5"><div className="w-2.5 h-2.5 bg-red-400 rounded-sm" /> Error</span>
-             </div>
-          </Panel>
+          <div className="lg:col-span-2 space-y-6">
+            {!activeResume ? (
+              <div className="bg-white rounded-xl border border-neutral-200 p-12 text-center flex flex-col items-center">
+                <FileText className="h-12 w-12 text-neutral-300 mb-4" />
+                <h3 className="text-lg font-medium text-neutral-900">Upload your resume to begin analysis</h3>
+                <p className="text-sm text-neutral-500 mt-2">Get career-specific feedback and improve your ATS score.</p>
+              </div>
+            ) : (
+              <>
+                <Panel>
+                  <div className="flex items-center justify-between mb-6">
+                    <div>
+                      <h2 className="text-lg font-semibold">{activeResume.fileName}</h2>
+                      <p className="text-sm text-neutral-500">
+                        Target Career: {activeResume.targetCareer?.title || "Not selected in profile"}
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <button onClick={() => deleteResume(activeResume.id)} className="text-sm text-red-600 hover:text-red-700 px-3 py-1.5 border border-red-200 rounded-md">Delete</button>
+                      <button 
+                        onClick={analyzeResume}
+                        disabled={isAnalyzing || !activeResume.targetCareer}
+                        className="flex items-center gap-2 bg-neutral-900 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-neutral-800 disabled:opacity-50"
+                      >
+                        {isAnalyzing ? <RefreshCw className="h-4 w-4 animate-spin" /> : <FileText className="h-4 w-4" />}
+                        Analyze Resume
+                      </button>
+                    </div>
+                  </div>
+                  {!activeResume.targetCareer && (
+                     <div className="bg-amber-50 border border-amber-200 text-amber-800 p-4 rounded-md text-sm flex gap-2">
+                        <AlertCircle className="h-5 w-5 shrink-0" />
+                        <p>Select a target career in your profile before analyzing your resume.</p>
+                     </div>
+                  )}
+                </Panel>
+
+                {activeResume.analysis && (
+                  <>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <Panel title="CareerForge Resume Score">
+                        <div className="flex flex-col items-center justify-center p-6">
+                          <div className="text-5xl font-bold text-neutral-900 mb-2">
+                            {activeResume.analysis.atsScore} <span className="text-xl text-neutral-400 font-normal">/ 100</span>
+                          </div>
+                          <p className="text-sm text-neutral-500 text-center mt-2">
+                            Career Match: {activeResume.analysis.atsScore}%
+                          </p>
+                        </div>
+                      </Panel>
+
+                      <Panel title="Resume Sections">
+                        <div className="flex flex-col items-center justify-center p-6">
+                          <div className="text-5xl font-bold text-neutral-900 mb-2">
+                            {activeResume.analysis.sectionScore} <span className="text-xl text-neutral-400 font-normal">/ 100</span>
+                          </div>
+                          <p className="text-sm text-neutral-500 text-center mt-2">
+                            Section completeness
+                          </p>
+                        </div>
+                      </Panel>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <Panel title="Career Skills Analysis">
+                        <div className="space-y-4">
+                          <div>
+                            <h4 className="text-sm font-medium text-neutral-700 mb-2">Matched Skills</h4>
+                            {activeResume.analysis.matchedSkills.length > 0 ? (
+                              <div className="flex flex-wrap gap-2">
+                                {activeResume.analysis.matchedSkills.map((s: string) => (
+                                  <span key={s} className="inline-flex items-center gap-1 bg-green-50 text-green-700 border border-green-200 px-2 py-1 rounded text-xs">
+                                    <CheckCircle2 className="h-3 w-3" /> {s}
+                                  </span>
+                                ))}
+                              </div>
+                            ) : (
+                              <p className="text-sm text-neutral-500">None found.</p>
+                            )}
+                          </div>
+                          <hr className="border-neutral-100" />
+                          <div>
+                            <h4 className="text-sm font-medium text-neutral-700 mb-2">Missing Skills</h4>
+                            {activeResume.analysis.missingSkills.length > 0 ? (
+                              <div className="flex flex-wrap gap-2">
+                                {activeResume.analysis.missingSkills.map((s: string) => (
+                                  <span key={s} className="inline-flex items-center gap-1 bg-red-50 text-red-700 border border-red-200 px-2 py-1 rounded text-xs">
+                                    <AlertCircle className="h-3 w-3" /> {s}
+                                  </span>
+                                ))}
+                              </div>
+                            ) : (
+                              <p className="text-sm text-neutral-500">All required skills found!</p>
+                            )}
+                            
+                            {activeResume.analysis.missingSkills.length > 0 && (
+                              <div className="mt-4">
+                                <button 
+                                  onClick={async () => {
+                                    try {
+                                      const res = await fetch("/api/roadmap/update-from-resume", {
+                                        method: "POST",
+                                        headers: { "Content-Type": "application/json" },
+                                        body: JSON.stringify({ missingSkills: activeResume.analysis.missingSkills })
+                                      });
+                                      if (res.ok) {
+                                        const data = await res.json();
+                                        alert(`Successfully added ${data.addedCount} missing skills to your roadmap!`);
+                                      } else {
+                                        alert("Failed to update roadmap.");
+                                      }
+                                    } catch (e) {
+                                      console.error(e);
+                                    }
+                                  }}
+                                  className="text-xs text-blue-600 hover:underline flex items-center gap-1 bg-transparent border-0 cursor-pointer p-0"
+                                >
+                                  <PlusCircle className="h-3 w-3" /> Add missing skills to Roadmap
+                                </button>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      </Panel>
+
+                      <Panel title="Improvement Recommendations">
+                        {activeResume.analysis.recommendations.length > 0 ? (
+                          <ul className="space-y-3">
+                            {activeResume.analysis.recommendations.map((rec: string, i: number) => (
+                              <li key={i} className="flex gap-3 text-sm text-neutral-700">
+                                <span className="text-neutral-400 font-medium">{i + 1}.</span>
+                                {rec}
+                              </li>
+                            ))}
+                          </ul>
+                        ) : (
+                          <p className="text-sm text-neutral-500">Your resume looks great! No specific recommendations at this time.</p>
+                        )}
+                      </Panel>
+                    </div>
+
+                    <Panel title="All Detected Keywords">
+                      <div className="flex flex-wrap gap-2">
+                        {activeResume.analysis.detectedSkills.map((s: string) => (
+                          <span key={s} className="bg-neutral-100 text-neutral-700 border border-neutral-200 px-2 py-1 rounded text-xs">
+                            {s}
+                          </span>
+                        ))}
+                      </div>
+                    </Panel>
+                  </>
+                )}
+              </>
+            )}
+          </div>
 
         </div>
-
       </div>
-    </>
+    </main>
   );
 }
