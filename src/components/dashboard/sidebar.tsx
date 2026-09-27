@@ -18,6 +18,7 @@ import {
   Settings,
   Sparkles,
   BriefcaseBusiness,
+  ListChecks,
 } from "lucide-react";
 
 const nav = [
@@ -33,6 +34,7 @@ const nav = [
   { href: "/dashboard/mentor", label: "AI mentor", icon: Bot },
   { href: "/dashboard/profile-optimization", label: "Profile optimization", icon: Sparkles },
   { href: "/dashboard/jobs", label: "Job matching", icon: BriefcaseBusiness },
+  { href: "/dashboard/action-center", label: "Career Action Center", icon: ListChecks },
 ];
 
 const bottomNav = [

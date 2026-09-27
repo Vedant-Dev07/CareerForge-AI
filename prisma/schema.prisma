@@ -81,6 +81,7 @@ model StudentProfile {
   professionalEvidence    ProfessionalEvidence[]
   jobRecommendations      JobRecommendation[]
   jobApplications         JobApplication[]
+  careerActions           CareerAction[]
 
   @@index([userId])
   @@index([targetDomain])
@@ -965,4 +966,32 @@ model JobApplication {
   @@unique([studentProfileId, jobId])
   @@index([studentProfileId, status])
   @@index([jobId])
+}
+
+// ============================================================
+// CAREER ACTION CENTER (PHASE 4.12)
+// ============================================================
+
+model CareerAction {
+  id               String   @id @default(cuid())
+  studentProfileId String
+  title            String
+  description      String
+  category         String
+  priority         String
+  reason           String
+  source           String
+  sourceId         String?
+  actionUrl        String?
+  estimatedMinutes Int?
+  completed        Boolean  @default(false)
+  completedAt      DateTime?
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  studentProfile StudentProfile @relation(fields: [studentProfileId], references: [id], onDelete: Cascade)
+
+  @@unique([studentProfileId, source])
+  @@index([studentProfileId])
+  @@index([studentProfileId, completed])
 }
