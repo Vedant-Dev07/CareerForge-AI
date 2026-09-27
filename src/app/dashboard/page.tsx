@@ -34,8 +34,23 @@ const quickLinks = [
   { href: "/dashboard/interview", label: "INTERVIEW PREP", title: "Start your first mock round", icon: Mic },
 ];
 
+type Readiness = {
+  overallScore: number;
+  weakSkillCount: number;
+  metrics: {
+    career: { score: number; explanation: string };
+    skills: { score: number; explanation: string };
+    resume: { score: number; explanation: string };
+    aptitude: { score: number; explanation: string };
+    interview: { score: number; explanation: string };
+    learning: { score: number; explanation: string };
+  };
+  recommendations: { id: string; title: string; detail: string; href: string }[];
+};
+
 export default function Dashboard() {
   const [userName, setUserName] = useState("Student");
+  const [readiness, setReadiness] = useState<Readiness | null>(null);
   const [summary, setSummary] = useState<{
     careerFit: number;
     skillCount: number;
@@ -69,6 +84,11 @@ export default function Dashboard() {
         const data = (await response.json()) as NonNullable<typeof aptitudeSummary>;
         setAptitudeSummary(data);
       });
+    fetch("/api/readiness", { cache: "no-store" })
+      .then(async (response) => {
+        if (!response.ok) return;
+        setReadiness((await response.json()) as Readiness);
+      });
   }, []);
 
   const careerFit = summary?.careerFit ?? 0;
@@ -90,12 +110,22 @@ export default function Dashboard() {
       }))
     : actions;
 
+  const readinessStats = [
+    { label: "Readiness", value: readiness ? `${readiness.overallScore}%` : "--", detail: "Weighted placement preparation score", icon: Target, accent: "cyan" as const },
+    { label: "Resume", value: readiness ? `${readiness.metrics.resume.score}%` : "--", detail: readiness?.metrics.resume.explanation ?? "Add a resume to calculate", icon: FileText, accent: "forge" as const },
+    { label: "Aptitude", value: readiness ? `${readiness.metrics.aptitude.score}%` : "--", detail: readiness?.metrics.aptitude.explanation ?? "Complete an assessment to calculate", icon: LineChart, accent: "success" as const },
+    { label: "Weak skills", value: readiness ? String(readiness.weakSkillCount) : "--", detail: "Skills currently marked weak or critical", icon: BarChart3, accent: "warning" as const },
+  ];
+  const actionableItems = readiness?.recommendations.length
+    ? readiness.recommendations.slice(0, 3).map((recommendation) => ({ title: recommendation.title, body: recommendation.detail, href: recommendation.href, icon: Target }))
+    : dashboardActions;
+
   return (
     <>
       <DashboardHeader title={`Welcome back, ${userName}`} subtitle="Here's where your placement prep stands." />
 
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4 mb-6">
-        {stats.map((stat) => (
+        {readinessStats.map((stat) => (
           <StatCard key={stat.label} {...stat} />
         ))}
       </div>
@@ -134,7 +164,7 @@ export default function Dashboard() {
 
       <div className="grid lg:grid-cols-[0.9fr_1.1fr] gap-5 mb-8">
         <ProfileCard />
-        <ReadinessPanel />
+        <ReadinessPanel readiness={readiness} />
       </div>
 
       <WeakSkillsPanel />
@@ -148,12 +178,12 @@ export default function Dashboard() {
           <BrainCircuit size={22} className="text-cyan" />
         </div>
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
-          <ScoreBar label="Career match" value={careerFit} accent="#2563EB" />
-          <ScoreBar label="Resume score" value={0} accent="#4F46E5" />
-          <ScoreBar label="Skills" value={skillsScore} accent="#16A34A" />
-          <ScoreBar label="Interview" value={71} accent="#F59E0B" />
-          <ScoreBar label="Aptitude" value={aptitudeSummary?.latestScore ?? 0} accent="#2563EB" />
-          <ScoreBar label="Learning progress" value={roadmap?.progress ?? 0} accent="#4F46E5" />
+          <ScoreBar label="Career match" value={readiness?.metrics.career.score ?? careerFit} accent="#2563EB" />
+          <ScoreBar label="Resume score" value={readiness?.metrics.resume.score ?? 0} accent="#4F46E5" />
+          <ScoreBar label="Technical skills" value={readiness?.metrics.skills.score ?? skillsScore} accent="#16A34A" />
+          <ScoreBar label="Interview" value={readiness?.metrics.interview.score ?? 0} accent="#F59E0B" />
+          <ScoreBar label="Aptitude" value={readiness?.metrics.aptitude.score ?? aptitudeSummary?.latestScore ?? 0} accent="#2563EB" />
+          <ScoreBar label="Learning progress" value={readiness?.metrics.learning.score ?? roadmap?.progress ?? 0} accent="#4F46E5" />
         </div>
       </Panel>
 
@@ -166,7 +196,7 @@ export default function Dashboard() {
           <CheckCircle2 size={21} className="text-success" />
         </div>
         <div className="grid gap-4 md:grid-cols-3">
-          {dashboardActions.map((action) => {
+          {actionableItems.map((action) => {
             const Icon = action.icon;
             return (
               <Link key={action.title} href={action.href} className="group rounded-2xl border border-line bg-slate-50/80 p-4 transition-all hover:-translate-y-1 hover:border-cyan/35 hover:bg-white">

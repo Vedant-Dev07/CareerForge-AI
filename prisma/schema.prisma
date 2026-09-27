@@ -601,12 +601,15 @@ model ReadinessScore {
   aptitudeScore    Int      // 0-100
   interviewScore   Int      // 0-100
   projectScore     Int      // 0-100
+  roadmapProgress  Int      @default(0) // 0-100
+  weakSkillCount   Int      @default(0)
   createdAt        DateTime @default(now())
 
   studentProfile StudentProfile @relation(fields: [studentProfileId], references: [id], onDelete: Cascade)
 
   @@index([studentProfileId])
   @@index([createdAt])
+  @@index([studentProfileId, createdAt])
 }
 
 // ============================================================
