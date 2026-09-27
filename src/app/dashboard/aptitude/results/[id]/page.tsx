@@ -7,6 +7,7 @@ import { AlertCircle, ArrowLeft, CheckCircle2, Clock3, Trophy, XCircle } from "l
 import DashboardHeader from "@/components/dashboard/header";
 import Panel from "@/components/ui/panel";
 import StatCard from "@/components/dashboard/stat-card";
+import WeakSkillsPanel from "@/components/aptitude/WeakSkillsPanel";
 
 type AssessmentResult = {
   result: {
@@ -90,7 +91,23 @@ export default function AssessmentResultPage({ params }: { params: { id: string 
         if (!response.ok) {
           throw new Error(data.error || "Unable to load assessment result.");
         }
-        
+
+        // Trigger weak skills analysis then refresh the roadmap with the new gaps.
+        // Both are fire-and-forget relative to displaying the result; errors are
+        // non-fatal so the result page still loads normally.
+        await fetch("/api/aptitude/weak-skills/analyze", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ attemptId: params.id }),
+        }).then((r) => {
+          if (r.ok) {
+            // Best-effort: update roadmap in the background; don't await
+            void fetch("/api/roadmap/refresh", { method: "POST" });
+          }
+        }).catch(() => {
+          // Non-fatal — weak skill analysis failure should not block the results page
+        });
+
         if (mounted) {
           setResult(data);
         }
@@ -187,6 +204,8 @@ export default function AssessmentResultPage({ params }: { params: { id: string 
         <div className="text-xs tracking-widest text-muted font-mono mb-4">PERFORMANCE INTERPRETATION</div>
         <p className="text-sm text-ink">{getScoreInterpretation(assessmentResult.score)}</p>
       </Panel>
+
+      <WeakSkillsPanel />
 
       <div className="grid md:grid-cols-2 gap-5 mb-6">
         <Panel className="rounded-2xl p-6">

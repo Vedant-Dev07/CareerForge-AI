@@ -25,6 +25,7 @@ import Panel from "@/components/ui/panel";
 import Button from "@/components/ui/button";
 import ScoreBar from "@/components/ui/score-bar";
 import SectionLabel from "@/components/ui/section-label";
+import JourneyMap from "@/components/dashboard/journey-map";
 
 const valueStrip = [
   { title: "Personalized Preparation", icon: Target },
@@ -503,19 +504,13 @@ export default function Home() {
 
       <section className="landing-section border-t border-line bg-white/60">
         <div className="max-w-6xl mx-auto px-6 py-20">
-          <SectionLabel>STUDENT JOURNEY</SectionLabel>
-          <h2 className="text-3xl font-black tracking-tight mb-12 text-ink">Your Complete Placement Journey</h2>
-          <div className="grid gap-4 md:grid-cols-7">
-            {studentJourney.map((stage, index) => (
-              <div key={stage.title} className="landing-card rounded-2xl border border-line bg-white p-4">
-                <div className="mb-3 flex h-8 w-8 items-center justify-center rounded-xl bg-forge/10 text-xs font-black text-forge">
-                  {index + 1}
-                </div>
-                <h3 className="mb-2 text-sm font-bold text-ink">{stage.title}</h3>
-                <p className="text-xs leading-relaxed text-muted">{stage.body}</p>
-              </div>
-            ))}
-          </div>
+          <Panel className="p-6 rounded-2xl">
+            <div className="mb-4">
+              <div className="text-xs tracking-widest text-muted font-mono uppercase">Product Journey</div>
+              <h2 className="mt-2 text-2xl md:text-3xl font-black text-ink">Your preparation map</h2>
+            </div>
+            <JourneyMap />
+          </Panel>
         </div>
       </section>
 

@@ -75,6 +75,7 @@ model StudentProfile {
   targetCareer            CareerRole?            @relation(fields: [targetCareerId], references: [id], onDelete: SetNull)
   careerAnalyses          CareerAnalysis[]
   assessmentAttempts     AssessmentAttempt[]
+  skillPerformances      SkillPerformance[]
 
   @@index([userId])
   @@index([targetDomain])
@@ -96,6 +97,8 @@ model Skill {
   careerRoles   CareerRole[]          @relation("CareerRoleRequiredSkills")
   projects      Project[]             @relation("ProjectRequiredSkills")
   questions     Question[]
+  interviewQuestions InterviewQuestion[]
+  skillPerformances SkillPerformance[]
 
   @@index([category])
 }
@@ -137,6 +140,7 @@ model CareerRole {
   targetProfiles        StudentProfile[]
   analyses              CareerAnalysis[]
   resumes               Resume[]
+  interviewQuestions    InterviewQuestion[]
 
   @@index([domain])
 }
@@ -236,6 +240,9 @@ model RoadmapTask {
   difficulty      String   // EASY, MEDIUM, HARD
   estimatedMinutes Int?
   status          String   @default("NOT_STARTED") // NOT_STARTED, IN_PROGRESS, COMPLETED
+  source          String   @default("CAREER_GAP")  // CAREER_GAP, APTITUDE_WEAK, RESUME_GAP
+  skillId         String?
+  priority        String   @default("MEDIUM")      // CRITICAL, HIGH, MEDIUM, LOW
   dueDate         DateTime?
   completedAt     DateTime?
   createdAt       DateTime @default(now())
@@ -245,6 +252,7 @@ model RoadmapTask {
 
   @@index([roadmapId])
   @@index([status])
+  @@index([source])
   @@index([dueDate])
 }
 
@@ -434,37 +442,110 @@ model AptitudeAttempt {
 // INTERVIEW
 // ============================================================
 
+model InterviewQuestion {
+  id              String   @id @default(cuid())
+  question        String
+  category        String   // TECHNICAL, HR, BEHAVIORAL, PROJECT, RESUME_BASED, CAREER_SPECIFIC
+  difficulty      String   // EASY, MEDIUM, HARD
+  expectedPoints  String?
+  explanation     String?
+  isActive        Boolean  @default(true)
+  
+  skillId         String?
+  careerRoleId    String?
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  skill           Skill?      @relation(fields: [skillId], references: [id], onDelete: SetNull)
+  careerRole      CareerRole? @relation(fields: [careerRoleId], references: [id], onDelete: SetNull)
+  answers         InterviewAnswer[]
+
+  @@index([category])
+  @@index([difficulty])
+  @@index([skillId])
+  @@index([careerRoleId])
+}
+
 model InterviewSession {
   id               String   @id @default(cuid())
   studentProfileId String
-  interviewType    String   // TECHNICAL, HR, ROLE_SPECIFIC
+  interviewType    String   // TECHNICAL, HR, MIXED, RESUME_BASED
+  difficulty       String   // EASY, MEDIUM, HARD
+  numQuestions     Int      @default(5)
   targetRole       String?
-  score            Int?     // 0-100
+  score            Float?   
+  
+  // Category scores
+  technicalScore   Float?
+  hrScore          Float?
+  resumeScore      Float?
+  communicationScore Float?
+
   status           String   @default("STARTED") // STARTED, IN_PROGRESS, COMPLETED
   startedAt        DateTime @default(now())
   completedAt      DateTime?
   createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
 
   studentProfile StudentProfile   @relation(fields: [studentProfileId], references: [id], onDelete: Cascade)
-  evaluations     InterviewEvaluation[]
+  answers        InterviewAnswer[]
+  legacyEvaluations LegacyInterviewEvaluation[]
 
   @@index([studentProfileId])
   @@index([status])
   @@index([createdAt])
 }
 
-model InterviewEvaluation {
+model InterviewAnswer {
   id                  String   @id @default(cuid())
   interviewSessionId  String
-  question            String
-  answer              String?
-  evaluation          String?
-  score               Int?     // 0-100
+  interviewQuestionId String?
+  questionText        String   // Stored in case question is deleted or generated dynamically (like resume-based)
+  answerText          String?
+  
   createdAt           DateTime @default(now())
+
+  interviewSession  InterviewSession   @relation(fields: [interviewSessionId], references: [id], onDelete: Cascade)
+  interviewQuestion InterviewQuestion? @relation(fields: [interviewQuestionId], references: [id], onDelete: SetNull)
+  evaluation        InterviewEvaluation?
+
+  @@index([interviewSessionId])
+  @@index([interviewQuestionId])
+}
+
+model InterviewEvaluation {
+  id                  String   @id @default(cuid())
+  interviewAnswerId   String   @unique
+  
+  score               Float    // 0-100 overall
+  relevance           Float    // 0-10
+  technicalAccuracy   Float    // 0-10
+  completeness        Float    // 0-10
+  clarity             Float    // 0-10
+  professionalism     Float    // 0-10
+  
+  feedback            String?
+  improvements        String[] @default([])
+  createdAt           DateTime @default(now())
+
+  interviewAnswer InterviewAnswer @relation(fields: [interviewAnswerId], references: [id], onDelete: Cascade)
+}
+
+model LegacyInterviewEvaluation {
+  id                String   @id
+  interviewSessionId String
+  question          String
+  answer            String?
+  evaluation        String?
+  score             Int?
+  createdAt         DateTime @default(now())
+  improvements      String[] @default([])
 
   interviewSession InterviewSession @relation(fields: [interviewSessionId], references: [id], onDelete: Cascade)
 
   @@index([interviewSessionId])
+  @@map("_InterviewEvaluationLegacy")
 }
 
 // ============================================================
@@ -577,4 +658,37 @@ model Notification {
   @@index([studentProfileId])
   @@index([isRead])
   @@index([createdAt])
+}
+
+// ============================================================
+// SKILL PERFORMANCE (PHASE 4.3)
+// ============================================================
+
+model SkillPerformance {
+  id                 String   @id @default(cuid())
+
+  studentProfileId   String
+  skillId            String
+
+  totalQuestions     Int
+  attemptedQuestions Int
+  correctAnswers     Int
+  incorrectAnswers   Int
+
+  accuracy           Float
+  classification     String
+  priority           String
+
+  assessmentCount    Int      @default(1)
+
+  lastAssessedAt     DateTime @default(now())
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  studentProfile     StudentProfile @relation(fields: [studentProfileId], references: [id], onDelete: Cascade)
+  skill              Skill          @relation(fields: [skillId], references: [id], onDelete: Cascade)
+
+  @@unique([studentProfileId, skillId])
+  @@index([studentProfileId])
+  @@index([skillId])
 }

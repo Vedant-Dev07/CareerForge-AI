@@ -29,7 +29,6 @@ const nav = [
   { href: "/dashboard/interview", label: "Interview", icon: Mic },
   { href: "/dashboard/analytics", label: "Analytics", icon: LineChart },
   { href: "/dashboard/mentor", label: "AI mentor", icon: Bot },
-  { href: "/dashboard/portfolio", label: "Portfolio", icon: Globe },
 ];
 
 const bottomNav = [

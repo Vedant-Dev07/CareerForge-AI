@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { Bell, LogOut } from "lucide-react";
 import { clearSession, getSession } from "@/lib/auth";
 import { useRouter } from "next/navigation";
+import NotificationsDropdown from "./notifications";
 
 export default function DashboardHeader({
   title,
@@ -56,9 +57,7 @@ export default function DashboardHeader({
           <LogOut size={14} />
           Logout
         </button>
-        <button className="inline-flex h-9 w-9 items-center justify-center rounded-xl border border-line bg-white text-muted shadow-sm" aria-label="Notifications">
-          <Bell size={17} />
-        </button>
+        <NotificationsDropdown />
         <div className="w-9 h-9 rounded-xl bg-cyan/10 border border-cyan/20 text-cyan flex items-center justify-center text-xs font-mono font-bold">
           {userName}
         </div>

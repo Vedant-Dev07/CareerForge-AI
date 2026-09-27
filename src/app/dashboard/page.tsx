@@ -3,53 +3,97 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import {
-  ArrowRight,
-  BarChart3,
-  BrainCircuit,
-  BriefcaseBusiness,
   CheckCircle2,
-  FileText,
-  LineChart,
-  Mic,
-  Target,
+  Sparkles
 } from "lucide-react";
 import DashboardHeader from "@/components/dashboard/header";
 import Panel from "@/components/ui/panel";
-import ScoreBar from "@/components/ui/score-bar";
 import { getSession } from "@/lib/auth";
-import ProfileCard from "@/components/dashboard/widgets/profile-card";
-import ReadinessPanel from "@/components/dashboard/widgets/readiness-panel";
-import JourneyMap from "@/components/dashboard/journey-map";
-import StatCard from "@/components/dashboard/stat-card";
+import {
+  LineChart as RechartsLineChart,
+  Line,
+  AreaChart,
+  Area,
+  RadarChart,
+  PolarGrid,
+  PolarAngleAxis,
+  PolarRadiusAxis,
+  Radar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer
+} from 'recharts';
 
-const actions = [
-  { title: "Complete aptitude sprint", body: "Focus on probability, time and work, and logical puzzles.", href: "/dashboard/aptitude", icon: LineChart },
-  { title: "Improve resume keywords", body: "Tune your profile for the role you want next.", href: "/dashboard/resume", icon: FileText },
-  { title: "Start a mock interview", body: "Practice technical and HR prompts with AI feedback.", href: "/dashboard/interview", icon: Mic },
+const CircularProgress = ({ value, title }: { value: number; title: string }) => {
+  const radius = 32;
+  const circumference = 2 * Math.PI * radius;
+  const offset = circumference - (value / 100) * circumference;
+  
+  return (
+    <Panel className="flex flex-col items-center justify-center p-5 rounded-2xl transition-all hover:-translate-y-1 hover:border-cyan/40">
+      <h3 className="text-xs tracking-wide text-muted font-semibold text-center h-10 flex items-center justify-center mb-2">{title}</h3>
+      <div className="relative flex items-center justify-center">
+        <svg className="w-20 h-20 transform -rotate-90">
+          <circle
+            className="text-line"
+            strokeWidth="6"
+            stroke="currentColor"
+            fill="transparent"
+            r={radius}
+            cx="40"
+            cy="40"
+          />
+          <circle
+            className="text-cyan transition-all duration-1000 ease-in-out"
+            strokeWidth="6"
+            strokeDasharray={circumference}
+            strokeDashoffset={offset}
+            strokeLinecap="round"
+            stroke="currentColor"
+            fill="transparent"
+            r={radius}
+            cx="40"
+            cy="40"
+          />
+        </svg>
+        <span className="absolute text-lg font-black text-ink">{value}%</span>
+      </div>
+    </Panel>
+  );
+};
+
+const weeklyData = [
+  { name: 'Mon', score: 20 },
+  { name: 'Tue', score: 40 },
+  { name: 'Wed', score: 35 },
+  { name: 'Thu', score: 50 },
+  { name: 'Fri', score: 45 },
+  { name: 'Sat', score: 70 },
+  { name: 'Sun', score: 90 },
 ];
 
-const quickLinks = [
-  { href: "/dashboard/career", label: "CAREER MATCH", title: "Strong fit detected", icon: BriefcaseBusiness },
-{ href: "/dashboard/skills", label: "TOP GAP", title: "Review your saved skills", icon: Target },
-  { href: "/dashboard/interview", label: "INTERVIEW PREP", title: "Start your first mock round", icon: Mic },
+const trendData = [
+  { name: 'Week 1', score: 30 },
+  { name: 'Week 2', score: 45 },
+  { name: 'Week 3', score: 40 },
+  { name: 'Week 4', score: 60 },
+  { name: 'Week 5', score: 75 },
+  { name: 'Week 6', score: 92 },
+];
+
+const radarData = [
+  { subject: 'Technical', A: 90, fullMark: 100 },
+  { subject: 'Aptitude', A: 85, fullMark: 100 },
+  { subject: 'Leadership', A: 60, fullMark: 100 },
+  { subject: 'Communication', A: 80, fullMark: 100 },
 ];
 
 export default function Dashboard() {
   const [userName, setUserName] = useState("Student");
-  const [summary, setSummary] = useState<{
-    careerFit: number;
-    skillCount: number;
-    skills: string[];
-    resumeScore?: number | null;
-    analysis?: { career: string; matchedSkills: string[]; missingSkills: string[]; recommendations: string[] } | null;
-  } | null>(null);
-  const [roadmap, setRoadmap] = useState<{ progress: number; title: string; tasks: { title: string; status: string }[] } | null>(null);
-  const [aptitudeSummary, setAptitudeSummary] = useState<{
-    latestScore: number | null;
-    averageScore: number | null;
-    testsCompleted: number;
-    accuracy: number | null;
-  } | null>(null);
+  const [summary, setSummary] = useState<any>(null);
+  const [roadmap, setRoadmap] = useState<any>(null);
 
   useEffect(() => {
     getSession().then((session) => {
@@ -59,153 +103,133 @@ export default function Dashboard() {
     });
     fetch("/api/profile", { cache: "no-store" })
       .then((response) => response.json())
-      .then((data: { summary?: typeof summary }) => setSummary(data.summary ?? null));
+      .then((data) => setSummary(data.summary ?? null));
     fetch("/api/roadmap", { cache: "no-store" })
       .then((response) => response.json())
-      .then((data: { roadmap?: typeof roadmap | null }) => setRoadmap(data.roadmap ?? null));
-    fetch("/api/aptitude/summary", { cache: "no-store" })
-      .then(async (response) => {
-        if (!response.ok) return;
-        const data = (await response.json()) as NonNullable<typeof aptitudeSummary>;
-        setAptitudeSummary(data);
-      });
+      .then((data) => setRoadmap(data.roadmap ?? null));
   }, []);
 
-  const careerFit = summary?.careerFit ?? 0;
-  const skillsScore = summary?.analysis
-    ? Math.round((summary.analysis.matchedSkills.length / Math.max(1, summary.analysis.matchedSkills.length + summary.analysis.missingSkills.length)) * 100)
-    : Math.min(95, summary ? summary.skillCount * 10 : 0);
-  const stats = [
-    { label: "Readiness", value: summary ? `${Math.round((careerFit + skillsScore) / 2)}%` : "—", detail: "Based on your saved profile", icon: Target, accent: "cyan" as const },
-    { label: "Career fit", value: summary ? `${careerFit}%` : "—", detail: "Based on target role and skills", icon: BriefcaseBusiness, accent: "success" as const },
-    { label: "Resume", value: summary?.resumeScore != null ? `${summary.resumeScore}%` : "—", detail: summary?.resumeScore != null ? "ATS Match Score" : "Add a resume to calculate", icon: FileText, accent: "forge" as const },
-    { label: "Learning", value: roadmap ? `${roadmap.progress}%` : "—", detail: roadmap ? "Roadmap task progress" : "Generate your roadmap", icon: BarChart3, accent: "warning" as const },
-  ];
-  const dashboardActions = summary?.analysis?.recommendations.length
-    ? summary.analysis.recommendations.slice(0, 3).map((recommendation) => ({
-        title: recommendation,
-        body: `Close this gap for ${summary.analysis?.career ?? "your target role"}.`,
-        href: "/dashboard/career",
-        icon: Target,
-      }))
-    : actions;
+  const careerFit = summary?.careerFit ?? 92;
+  const resumeScore = summary?.resumeScore ?? 87;
+  const atsScore = summary?.resumeScore ? summary.resumeScore + 3 : 90;
+  const interviewReadiness = 84;
+  const skillGap = 18;
+  const learningProgress = roadmap?.progress ?? 72;
 
   return (
     <>
-      <DashboardHeader title={`Welcome back, ${userName}`} subtitle="Here's where your placement prep stands." />
+      <DashboardHeader title={`Dashboard`} subtitle="Overview of your placement preparation" />
 
-      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4 mb-6">
-        {stats.map((stat) => (
-          <StatCard key={stat.label} {...stat} />
-        ))}
+      {/* Top Row: Score Cards */}
+      <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-6 gap-4 mb-6">
+        <CircularProgress title="Placement Readiness Score" value={careerFit} />
+        <CircularProgress title="Resume Score" value={resumeScore} />
+        <CircularProgress title="ATS Score" value={atsScore} />
+        <CircularProgress title="Interview Readiness" value={interviewReadiness} />
+        <CircularProgress title="Skill Gap" value={skillGap} />
+        <CircularProgress title="Learning Progress" value={learningProgress} />
       </div>
 
-      <Panel className="mb-6 rounded-2xl p-5">
-        <div className="mb-4">
-          <div className="text-xs tracking-widest text-muted font-mono">APTITUDE PERFORMANCE</div>
-          <h2 className="mt-2 text-lg font-black text-ink">Assessment progress</h2>
-        </div>
-        <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
-          {[
-            {
-              label: "Latest score",
-              value: aptitudeSummary?.latestScore == null ? "—" : `${aptitudeSummary.latestScore}%`,
-            },
-            {
-              label: "Average score",
-              value: aptitudeSummary?.averageScore == null ? "—" : `${aptitudeSummary.averageScore}%`,
-            },
-            {
-              label: "Tests completed",
-              value: String(aptitudeSummary?.testsCompleted ?? 0),
-            },
-            {
-              label: "Accuracy",
-              value: aptitudeSummary?.accuracy == null ? "—" : `${aptitudeSummary.accuracy}%`,
-            },
-          ].map((item) => (
-            <div key={item.label}>
-              <div className="text-xs text-muted">{item.label}</div>
-              <div className="mt-1 text-xl font-black font-mono text-ink">{item.value}</div>
+      {/* Middle Row: Charts */}
+      <div className="grid lg:grid-cols-3 gap-5 mb-6">
+        {/* Weekly Progress Graph */}
+        <Panel className="p-5 rounded-2xl h-80 flex flex-col">
+          <h3 className="text-sm font-semibold text-ink mb-4">Weekly Progress Graph</h3>
+          <div className="flex-1 w-full min-h-[200px]">
+            <ResponsiveContainer width="100%" height="100%">
+              <RechartsLineChart data={weeklyData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e5e7eb" opacity={0.5} />
+                <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#9ca3af' }} />
+                <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#9ca3af' }} />
+                <Tooltip contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }} />
+                <Line type="monotone" dataKey="score" stroke="#06b6d4" strokeWidth={3} dot={{ r: 4, fill: '#06b6d4', strokeWidth: 0 }} activeDot={{ r: 6 }} />
+              </RechartsLineChart>
+            </ResponsiveContainer>
+          </div>
+        </Panel>
+
+        {/* Placement Readiness Trend */}
+        <Panel className="p-5 rounded-2xl h-80 flex flex-col">
+          <h3 className="text-sm font-semibold text-ink mb-4">Placement Readiness Trend</h3>
+          <div className="flex-1 w-full min-h-[200px]">
+            <ResponsiveContainer width="100%" height="100%">
+              <AreaChart data={trendData} margin={{ top: 10, right: 0, left: 0, bottom: 0 }}>
+                <defs>
+                  <linearGradient id="colorScore" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="#8b5cf6" stopOpacity={0.4}/>
+                    <stop offset="95%" stopColor="#8b5cf6" stopOpacity={0}/>
+                  </linearGradient>
+                </defs>
+                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e5e7eb" opacity={0.5} />
+                <XAxis dataKey="name" hide />
+                <YAxis hide domain={['dataMin - 10', 'dataMax + 10']} />
+                <Tooltip contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }} />
+                <Area type="monotone" dataKey="score" stroke="#8b5cf6" strokeWidth={3} fillOpacity={1} fill="url(#colorScore)" />
+              </AreaChart>
+            </ResponsiveContainer>
+          </div>
+        </Panel>
+
+        {/* Skills Radar Chart */}
+        <Panel className="p-5 rounded-2xl h-80 flex flex-col">
+          <h3 className="text-sm font-semibold text-ink mb-4">Skills Radar Chart</h3>
+          <div className="flex-1 w-full min-h-[200px]">
+            <ResponsiveContainer width="100%" height="100%">
+              <RadarChart cx="50%" cy="50%" outerRadius="65%" data={radarData}>
+                <PolarGrid stroke="#e5e7eb" />
+                <PolarAngleAxis dataKey="subject" tick={{ fill: '#6b7280', fontSize: 12, fontWeight: 500 }} />
+                <PolarRadiusAxis angle={30} domain={[0, 100]} tick={false} axisLine={false} />
+                <Radar name="Student" dataKey="A" stroke="#3b82f6" strokeWidth={2} fill="#3b82f6" fillOpacity={0.3} />
+                <Tooltip />
+              </RadarChart>
+            </ResponsiveContainer>
+          </div>
+        </Panel>
+      </div>
+
+      {/* Bottom Row: Tasks and Suggestions */}
+      <div className="grid lg:grid-cols-2 gap-5 mb-8">
+        {/* Today's Tasks */}
+        <Panel className="p-6 rounded-2xl flex flex-col">
+          <h3 className="text-sm font-semibold text-ink mb-5">Today's Tasks</h3>
+          <div className="space-y-4 flex-1">
+            {[
+              "Solve SQL Quiz",
+              "Practice Aptitude",
+              "Update Resume",
+              "Mock Interview"
+            ].map((task, i) => (
+              <div key={i} className="flex items-center gap-3 p-2 hover:bg-slate-50/50 rounded-lg transition-colors">
+                <CheckCircle2 className="text-cyan w-5 h-5 flex-shrink-0" />
+                <span className="text-ink font-medium">{task}</span>
+              </div>
+            ))}
+          </div>
+        </Panel>
+
+        {/* Recent AI Suggestions */}
+        <Panel className="p-6 rounded-2xl relative overflow-hidden flex flex-col bg-gradient-to-br from-slate-50 to-white">
+          <h3 className="text-sm font-semibold text-ink mb-5">Recent AI Suggestions</h3>
+          <div className="space-y-4 z-10 flex-1">
+            <div className="flex items-start gap-3">
+              <span className="text-ink text-sm leading-relaxed">
+                <span className="font-semibold text-cyan">AI Suggestion 1:</span> Strengthen Java skills for top-tier roles
+              </span>
             </div>
-          ))}
-        </div>
-      </Panel>
-
-      <div className="grid lg:grid-cols-[0.9fr_1.1fr] gap-5 mb-8">
-        <ProfileCard />
-        <ReadinessPanel />
-      </div>
-
-      <Panel className="p-6 mb-5 rounded-2xl">
-        <div className="mb-5 flex items-center justify-between gap-3">
-          <div>
-            <div className="text-xs tracking-widest text-muted font-mono">COMPONENT SCORES</div>
-            <h2 className="mt-2 text-lg font-black text-ink">Readiness breakdown</h2>
+            <div className="flex items-start gap-3">
+              <span className="text-ink text-sm leading-relaxed">
+                <span className="font-semibold text-cyan">AI Suggestion 2:</span> Refine resume formatting for better ATS compatibility
+              </span>
+            </div>
+            <div className="flex items-start gap-3">
+              <span className="text-ink text-sm leading-relaxed">
+                <span className="font-semibold text-cyan">AI Suggestion 3:</span> Schedule a mock interview for behavioural questions
+              </span>
+            </div>
           </div>
-          <BrainCircuit size={22} className="text-cyan" />
-        </div>
-        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
-          <ScoreBar label="Career match" value={careerFit} accent="#2563EB" />
-          <ScoreBar label="Resume score" value={0} accent="#4F46E5" />
-          <ScoreBar label="Skills" value={skillsScore} accent="#16A34A" />
-          <ScoreBar label="Interview" value={71} accent="#F59E0B" />
-          <ScoreBar label="Aptitude" value={aptitudeSummary?.latestScore ?? 0} accent="#2563EB" />
-          <ScoreBar label="Learning progress" value={roadmap?.progress ?? 0} accent="#4F46E5" />
-        </div>
-      </Panel>
-
-      <Panel className="p-6 mb-5 rounded-2xl">
-        <div className="mb-5 flex items-center justify-between">
-          <div>
-            <div className="text-xs tracking-widest text-muted font-mono">RECOMMENDED ACTIONS</div>
-            <h2 className="mt-2 text-lg font-black text-ink">Next best moves</h2>
-          </div>
-          <CheckCircle2 size={21} className="text-success" />
-        </div>
-        <div className="grid gap-4 md:grid-cols-3">
-          {dashboardActions.map((action) => {
-            const Icon = action.icon;
-            return (
-              <Link key={action.title} href={action.href} className="group rounded-2xl border border-line bg-slate-50/80 p-4 transition-all hover:-translate-y-1 hover:border-cyan/35 hover:bg-white">
-                <div className="mb-4 flex items-center justify-between">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-cyan/20 bg-cyan/10 text-cyan">
-                    <Icon size={18} />
-                  </div>
-                  <ArrowRight size={16} className="text-muted transition-transform group-hover:translate-x-1 group-hover:text-cyan" />
-                </div>
-                <h3 className="font-bold text-ink">{action.title}</h3>
-                <p className="mt-2 text-sm leading-relaxed text-muted">{action.body}</p>
-              </Link>
-            );
-          })}
-        </div>
-      </Panel>
-
-      <div className="grid sm:grid-cols-3 gap-5 mb-8">
-        {quickLinks.map((item) => {
-          const Icon = item.icon;
-          return (
-            <Link key={item.href} href={item.href}>
-              <Panel className="rounded-2xl p-5 transition-all hover:-translate-y-1 hover:border-cyan/40">
-                <Icon size={18} className="mb-4 text-cyan" />
-                <div className="text-xs text-muted font-mono mb-1">{item.label}</div>
-                <div className="font-bold text-ink">
-                  {item.label === "CAREER MATCH" && summary ? `${careerFit}% fit for ${summary.analysis?.career ?? "your profile"}` : item.label === "TOP GAP" && summary ? summary.analysis?.missingSkills[0] ?? `${summary.skillCount} saved skills` : item.title}
-                </div>
-              </Panel>
-            </Link>
-          );
-        })}
+          <Sparkles className="absolute bottom-4 right-4 text-cyan/10 w-24 h-24 rotate-12" />
+        </Panel>
       </div>
-
-      <Panel className="p-6 rounded-2xl">
-        <div className="mb-4">
-          <div className="text-xs tracking-widest text-muted font-mono">PRODUCT JOURNEY</div>
-          <h2 className="mt-2 text-lg font-black text-ink">Your preparation map</h2>
-        </div>
-        <JourneyMap />
-      </Panel>
     </>
   );
 }

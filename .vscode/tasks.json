@@ -209,6 +209,194 @@
 			"command": "npx prisma migrate status",
 			"isBackground": false,
 			"problemMatcher": []
+		},
+		{
+			"label": "Inspect interview database columns",
+			"type": "shell",
+			"command": "node",
+			"args": [
+				".tmp-interview-schema-check.mjs"
+			],
+			"isBackground": false,
+			"problemMatcher": []
+		},
+		{
+			"label": "Count legacy interview rows safely",
+			"type": "shell",
+			"command": "node",
+			"args": [
+				".tmp-interview-legacy-counts.mjs"
+			],
+			"isBackground": false,
+			"problemMatcher": []
+		},
+		{
+			"label": "Count legacy interview rows safely",
+			"type": "shell",
+			"command": "node",
+			"args": [
+				".tmp-interview-legacy-counts.mjs"
+			],
+			"isBackground": false,
+			"problemMatcher": []
+		},
+		{
+			"label": "Inspect interview database schema",
+			"type": "shell",
+			"command": "node",
+			"args": [
+				".tmp-interview-schema-inspection.mjs"
+			],
+			"isBackground": false,
+			"problemMatcher": []
+		},
+		{
+			"label": "Retry interview schema inspection",
+			"type": "shell",
+			"command": "node",
+			"args": [
+				".tmp-interview-schema-inspection.mjs"
+			],
+			"isBackground": false,
+			"problemMatcher": []
+		},
+		{
+			"label": "Check interview data and FKs",
+			"type": "shell",
+			"command": "node",
+			"args": [
+				".tmp-interview-schema-inspection.mjs"
+			],
+			"isBackground": false,
+			"problemMatcher": []
+		},
+		{
+			"label": "Verify interview database indexes",
+			"type": "shell",
+			"command": "node",
+			"args": [
+				".tmp-interview-schema-inspection.mjs"
+			],
+			"isBackground": false,
+			"problemMatcher": []
+		},
+		{
+			"label": "Validate interview Prisma schema",
+			"type": "shell",
+			"command": "npx prisma validate",
+			"isBackground": false,
+			"problemMatcher": []
+		},
+		{
+			"label": "Apply interview schema migration",
+			"type": "shell",
+			"command": "npx prisma migrate deploy",
+			"isBackground": false,
+			"problemMatcher": []
+		},
+		{
+			"label": "Verify migration status",
+			"type": "shell",
+			"command": "npx prisma migrate status",
+			"isBackground": false,
+			"problemMatcher": []
+		},
+		{
+			"label": "Regenerate Prisma client",
+			"type": "shell",
+			"command": "npx prisma generate",
+			"isBackground": false,
+			"problemMatcher": []
+		},
+		{
+			"label": "Verify live interview schema",
+			"type": "shell",
+			"command": "node .tmp-interview-schema-inspection.mjs",
+			"isBackground": false,
+			"problemMatcher": []
+		},
+		{
+			"label": "Locate Node process locking Prisma",
+			"type": "shell",
+			"command": "Get-Process -Name node | Select-Object Id,Path,StartTime",
+			"isBackground": false,
+			"problemMatcher": []
+		},
+		{
+			"label": "Identify running Node commands",
+			"type": "shell",
+			"command": "Get-CimInstance Win32_Process | Where-Object { $_.ProcessId -in @(5024,6968) } | Select-Object ProcessId,CommandLine",
+			"isBackground": false,
+			"problemMatcher": []
+		},
+		{
+			"label": "Read running Node commands",
+			"type": "shell",
+			"command": "Get-CimInstance Win32_Process | Where-Object { $_.ProcessId -in @(5024,6968) } | ForEach-Object { \"PID $($_.ProcessId): $($_.CommandLine)\" }",
+			"isBackground": false,
+			"problemMatcher": []
+		},
+		{
+			"label": "Read running Node commands",
+			"type": "shell",
+			"command": "Get-CimInstance Win32_Process | Where-Object { $_.ProcessId -in @(5024,6968) } | Select-Object -ExpandProperty CommandLine",
+			"isBackground": false,
+			"problemMatcher": []
+		},
+		{
+			"label": "Print exact Node process command lines",
+			"type": "shell",
+			"command": "Get-CimInstance Win32_Process | Where-Object { $_.ProcessId -in @(5024,6968) } | Select-Object -ExpandProperty CommandLine",
+			"isBackground": false,
+			"problemMatcher": []
+		},
+		{
+			"label": "Stop Prisma-locking local server",
+			"type": "shell",
+			"command": "Stop-Process -Id 5024,6968",
+			"isBackground": false,
+			"problemMatcher": []
+		},
+		{
+			"label": "Generate aligned Prisma client",
+			"type": "shell",
+			"command": "npx prisma generate",
+			"isBackground": false,
+			"problemMatcher": []
+		},
+		{
+			"label": "Build after interview migration",
+			"type": "shell",
+			"command": "npm run build",
+			"isBackground": false,
+			"problemMatcher": []
+		},
+		{
+			"label": "Typecheck aligned interview schema",
+			"type": "shell",
+			"command": "npx tsc --noEmit",
+			"isBackground": false,
+			"problemMatcher": []
+		},
+		{
+			"label": "Restart local production server",
+			"type": "shell",
+			"command": "npm",
+			"args": [
+				"start",
+				"--",
+				"-p",
+				"3020"
+			],
+			"isBackground": true,
+			"problemMatcher": []
+		},
+		{
+			"label": "Check persisted interview evaluation",
+			"type": "shell",
+			"command": "node .tmp-interview-evaluation-check.mjs cmuji5xl20001ih34kmdq5zal",
+			"isBackground": false,
+			"problemMatcher": []
 		}
 	]
 }
