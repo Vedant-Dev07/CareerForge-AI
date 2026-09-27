@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import DashboardHeader from "@/components/dashboard/header";
 import Panel from "@/components/ui/panel";
-import { Github, Star, GitFork, FileText, Lock, ExternalLink, RefreshCw, X, CheckCircle2, AlertCircle } from "lucide-react";
+import { Github, Star, GitFork, FileText, Lock, ExternalLink, RefreshCw, X, CheckCircle2, AlertCircle, Code2 } from "lucide-react";
 
 type GitHubConnection = {
   id: string;
@@ -447,14 +447,5 @@ function MetricCard({ label, value, icon }: { label: string; value: number; icon
         <div className="text-xs text-muted">{label}</div>
       </div>
     </div>
-  );
-}
-
-function Code2({ size }: { size: number }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <polyline points="16 18 22 12 16 6"></polyline>
-      <polyline points="8 6 2 12 8 18"></polyline>
-    </svg>
   );
 }

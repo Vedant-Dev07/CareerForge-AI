@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import DashboardHeader from "@/components/dashboard/header";
 import Panel from "@/components/ui/panel";
-import { Linkedin, Briefcase, GraduationCap, Award, ExternalLink, RefreshCw, X, CheckCircle2, AlertCircle, Building, Calendar } from "lucide-react";
+import { Linkedin, Briefcase, GraduationCap, Award, ExternalLink, RefreshCw, X, CheckCircle2, AlertCircle, Building, Calendar, Code2 } from "lucide-react";
 
 type LinkedInProfile = {
   profile: {

@@ -79,6 +79,8 @@ model StudentProfile {
   githubConnection       GitHubConnection?
   linkedinProfile        LinkedInProfile?
   professionalEvidence    ProfessionalEvidence[]
+  jobRecommendations      JobRecommendation[]
+  jobApplications         JobApplication[]
 
   @@index([userId])
   @@index([targetDomain])
@@ -887,4 +889,80 @@ model ProfessionalEvidence {
   @@index([skillId])
   @@index([source])
   @@index([confidence])
+}
+
+// ============================================================
+// JOB MATCHING & APPLICATIONS (PHASE 4.11)
+// ============================================================
+
+model JobOpportunity {
+  id               String   @id @default(cuid())
+  title            String
+  company          String
+  location         String?
+  workMode         String?
+  description      String?
+  requiredSkills   String[] @default([])
+  preferredSkills  String[] @default([])
+  experienceLevel  String?
+  salaryRange      String?
+  deadline         DateTime?
+  applicationUrl   String
+  source           String?
+  isActive         Boolean  @default(true)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  recommendations JobRecommendation[]
+  applications    JobApplication[]
+
+  @@index([company])
+  @@index([isActive])
+  @@index([deadline])
+}
+
+model JobRecommendation {
+  id                String   @id @default(cuid())
+  studentProfileId  String
+  jobId             String
+  matchScore        Int
+  careerAlignment   Int
+  skillCoverage     Int
+  evidenceScore     Int
+  resumeAlignment   Int
+  projectRelevance  Int
+  aptitudeReadiness Int
+  interviewReadiness Int
+  missingSkills     String[] @default([])
+  explanation       String
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  studentProfile StudentProfile @relation(fields: [studentProfileId], references: [id], onDelete: Cascade)
+  job            JobOpportunity @relation(fields: [jobId], references: [id], onDelete: Cascade)
+
+  @@unique([studentProfileId, jobId])
+  @@index([studentProfileId, matchScore])
+  @@index([jobId])
+}
+
+model JobApplication {
+  id              String   @id @default(cuid())
+  studentProfileId String
+  jobId           String
+  status          String   @default("SAVED")
+  appliedAt       DateTime?
+  notes           String?
+  interviewDate   DateTime?
+  interviewNotes  String?
+  followUpDate    DateTime?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  studentProfile StudentProfile @relation(fields: [studentProfileId], references: [id], onDelete: Cascade)
+  job            JobOpportunity @relation(fields: [jobId], references: [id], onDelete: Cascade)
+
+  @@unique([studentProfileId, jobId])
+  @@index([studentProfileId, status])
+  @@index([jobId])
 }
